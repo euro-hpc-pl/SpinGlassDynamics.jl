@@ -1,1 +1,1 @@
-# SpinGlassDyanmics
+# SpinGlassDynamics
