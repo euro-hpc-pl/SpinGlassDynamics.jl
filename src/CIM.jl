@@ -5,6 +5,7 @@ export OpticalOscillators,
 # Optical Parametric Oscillator (OPO)
 # Based on https://arxiv.org/pdf/1901.08927.pdf
 struct OpticalOscillators{T <: Real}
+    ig::IsingGraph,
     pump::T,
     scale::T,
     noise::Vector{T}
@@ -18,7 +19,6 @@ end
 activation(x::T, xsat::T) where T <: Real = abs(x) < xsat ? x : xsat
 
 function evolve_optical_oscillators(
-    ig::IsingGraph,
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
 )  where T <: Real
@@ -27,8 +27,9 @@ function evolve_optical_oscillators(
     for _ ∈ 1:dyn.total_time
         Δx = opo.pump .* x .+ opo.noise
         for i ∈ 1:N, j ∈ 1:N
-            if has_edge(ig, i, j)
-                Δx[i] += opo.scale * get_prop(ig, i, j :J) * x[j]
+            if has_edge(opo.ig, i, j)
+                J = get_prop(opo.ig, i, j :J)
+                Δx[i] += opo.scale * J * x[j]
             end
         end
         x = activation.(Δx, Ref(dyn.saturation))
@@ -39,12 +40,10 @@ end
 # Degenerate Optical Parametric Oscillator (DOPO)
 # Based on https://www.nature.com/articles/s41467-018-07328-1
 
-
 struct DegenerateOscillators{T <: Real}
+    ig::IsingGraph,
     pump::T,
-    saturation_amplitude::T
+    saturation::T
 end
-
-
 function evolve_degenerate_oscillators()
 end
