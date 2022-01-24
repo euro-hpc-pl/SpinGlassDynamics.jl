@@ -1,6 +1,7 @@
+# Based on https://arxiv.org/pdf/1901.08927.pdf [Optical Parametric Oscillator (OPO)]
 export OpticalOscillators,
        OPODynamics,
-       evolve
+       evolve_optical_oscillators
 
 struct OpticalOscillators{T <: Real}
     μ::T,
@@ -15,7 +16,6 @@ end
 
 activation(x::T, xsat::T) where T <: Real = abs(x) < xsat ? x : xsat
 
-# Based on https://arxiv.org/pdf/1901.08927.pdf
 function evolve_optical_oscillators(
     ig::IsingGraph,
     opo::OpticalOscillators{T},
