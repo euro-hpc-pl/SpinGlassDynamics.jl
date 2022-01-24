@@ -1,28 +1,36 @@
-export optical_parametric_oscillators,
-       degenerate_optical_parametric_oscillators
+export OpticalOscillators,
+       OPODynamics,
+       evolve
+
+struct OpticalOscillators{T <: Real}
+    μ::T,
+    ξ::T,
+    f::Vector{T}
+end
+struct OPODynamics{T <: Real}
+    x0::Vector{T},
+    xsat::T,
+    total_time::Int
+end
 
 activation(x::T, xsat::T) where T <: Real = abs(x) < xsat ? x : xsat
 
 # Based on https://arxiv.org/pdf/1901.08927.pdf
-function optical_parametric_oscillators(
+function evolve_optical_oscillators(
     ig::IsingGraph,
-    x0::Vector{T},
-    μ::T,
-    ξ::T,
-    f::Vector{T},
-    xsat::T,
-    total_time::Int
+    opo::OpticalOscillators{T},
+    dyn::OPODynamics{T}
 )  where T <: Real
-    N = length(x0)
-    x = x0
-    for _ ∈ 1:total_time
-        Δx = μ .* x .+ f
+    N = length(dyn.x0)
+    x = dyn.x0
+    for _ ∈ 1:dyn.total_time
+        Δx = opo.μ .* x .+ opo.f
         for i ∈ 1:N, j ∈ 1:N
             if has_edge(ig, i, j)
-                Δx[i] += ξ * get_prop(ig, i, j :J) * x[j]
+                Δx[i] += opo.ξ * get_prop(ig, i, j :J) * x[j]
             end
         end
-        x = activation.(Δx, Ref(xsat))
+        x = activation.(Δx, Ref(dyn.xsat))
     end
     x
 end
