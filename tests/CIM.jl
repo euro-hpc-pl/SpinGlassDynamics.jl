@@ -7,10 +7,10 @@
 
     x0 = rand(L)
     total_time = 100
-    μ = 0.2
+    μ = -5.0
     ξ = 0.6
     f = rand(L)
     xsat = 2.0
 
-    x = naive_coherent_Ising_machine(ig, x0, μ, ξ, f, xsat)
+    x = optical_parametric_oscillators(ig, x0, μ, ξ, f, xsat)
 end

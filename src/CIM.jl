@@ -1,9 +1,10 @@
-export naive_coherent_Ising_machine
+export optical_parametric_oscillators,
+       degenerate_optical_parametric_oscillators
 
 activation(x::T, xsat::T) where T <: Real = abs(x) < xsat ? x : xsat
 
-# https://arxiv.org/pdf/1901.08927.pdf
-function naive_coherent_Ising_machine(
+# Based on https://arxiv.org/pdf/1901.08927.pdf
+function optical_parametric_oscillators(
     ig::IsingGraph,
     x0::Vector{T},
     μ::T,
@@ -26,4 +27,6 @@ function naive_coherent_Ising_machine(
     x
 end
 
-# https://www.nature.com/articles/s41467-018-07328-1
+# Based on https://www.nature.com/articles/s41467-018-07328-1
+function degenerate_optical_parametric_oscillators()
+end
