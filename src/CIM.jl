@@ -1,8 +1,9 @@
-# Based on https://arxiv.org/pdf/1901.08927.pdf [Optical Parametric Oscillator (OPO)]
 export OpticalOscillators,
        OPODynamics,
        evolve_optical_oscillators
 
+# Optical Parametric Oscillator (OPO)
+# Based on https://arxiv.org/pdf/1901.08927.pdf
 struct OpticalOscillators{T <: Real}
     μ::T,
     ξ::T,
@@ -35,6 +36,8 @@ function evolve_optical_oscillators(
     x
 end
 
+# Degenerate Optical Parametric Oscillator (DOPO)
 # Based on https://www.nature.com/articles/s41467-018-07328-1
-function degenerate_optical_parametric_oscillators()
+
+function evolve_degenerate_oscillators()
 end
