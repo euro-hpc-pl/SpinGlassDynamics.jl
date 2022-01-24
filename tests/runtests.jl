@@ -1,13 +1,15 @@
 
 using DifferentialEquations
 using SpinGlassNetworks
+using SpinGlassDynamics
 
 using Test
 
 my_tests = []
 
 push!(my_tests,
-        "lagrange.jl",
+    "CIM.jl",
+    #"lagrange.jl",
 )
 
 for my_test in my_tests
