@@ -1,9 +1,7 @@
 module SpinGlassDynamics
-
-using DifferentialEquations
 using SpinGlassNetworks
-
+using DifferentialEquations
 
 include("CIM.jl")
 
-end # module
+end #module

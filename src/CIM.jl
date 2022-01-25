@@ -5,14 +5,14 @@ export OpticalOscillators,
 # Optical Parametric Oscillator (OPO)
 # Based on https://arxiv.org/pdf/1901.08927.pdf
 struct OpticalOscillators{T <: Real}
-    ig::IsingGraph,
-    pump::T,
-    scale::T,
+    ig::IsingGraph
+    pump::T
+    scale::T
     noise::Vector{T}
 end
 struct OPODynamics{T <: Real}
-    initial_state::Vector{T},
-    saturation::T,
+    initial_state::Vector{T}
+    saturation::T
     total_time::Int
 end
 
@@ -41,8 +41,8 @@ end
 # Based on https://www.nature.com/articles/s41467-018-07328-1
 
 struct DegenerateOscillators{T <: Real}
-    ig::IsingGraph,
-    pump::T,
+    ig::IsingGraph
+    pump::T
     saturation::T
 end
 function evolve_degenerate_oscillators()

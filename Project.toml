@@ -1,0 +1,19 @@
+name = "SpinGlassDynamics"
+uuid = "860688e1-f392-4e7d-926f-90b454cb2079"
+authors = ["Bartłomiej Gardas <bartek.gardas@gmail.com>", "Konrad Jałowiecki <dexter2206@gmail.com>", "Łukasz Pawela <lukasz.pawela@gmail.com>"]
+version = "0.0.1"
+
+[deps]
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+MKL = "33e6dc65-8f57-5167-99aa-e5a354878fb2"
+SpinGlassNetworks = "b7f6bd3e-55dc-4da6-96a9-ef9dbec6ac19"
+
+[compat]
+MKL = "0.4.2"
+julia = "1.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
