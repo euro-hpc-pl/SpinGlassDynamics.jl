@@ -8,7 +8,6 @@ my_tests = []
 
 push!(my_tests,
     "CIM.jl",
-    "lagrange.jl",
 )
 
 for my_test in my_tests

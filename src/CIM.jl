@@ -28,7 +28,7 @@ function evolve_optical_oscillators(
         Δx = opo.pump .* x .+ opo.noise
         for i ∈ 1:N, j ∈ 1:N
             if has_edge(opo.ig, i, j)
-                J = get_prop(opo.ig, i, j :J)
+                J = get_prop(opo.ig, i, j, :J)
                 Δx[i] += opo.scale * J * x[j]
             end
         end
@@ -39,11 +39,11 @@ end
 
 # Degenerate Optical Parametric Oscillator (DOPO)
 # Based on https://www.nature.com/articles/s41467-018-07328-1
-
 struct DegenerateOscillators{T <: Real}
     ig::IsingGraph
     pump::T
     saturation::T
 end
+
 function evolve_degenerate_oscillators()
 end
