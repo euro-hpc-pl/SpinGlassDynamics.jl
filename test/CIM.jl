@@ -4,13 +4,13 @@
 
     ig = ising_graph("$(@__DIR__)/instances/pathological/chim_$(m)_$(n)_$(t).txt")
 
-    pump = -5.0
+    pump = -15.0
     scale = 0.6
     noise = rand(L)
 
     x0 = rand(L)
     sat = 0.7
-    time = 1000.0
+    time = 4000.0
 
     opo = OpticalOscillators{Float64}(ig, pump, scale, noise)
     dyn = OPODynamics{Float64}(x0, sat, time)
@@ -23,6 +23,13 @@
         @test dyn.initial_state ≈ x0
         @test dyn.saturation ≈ sat
         @test dyn.total_time ≈ time
+    end
+
+    @testset "activation function works properly." begin
+        a = dyn.saturation - rand()
+        b = dyn.saturation + rand()
+        @test activation(a, dyn.saturation) ≈ a
+        @test activation(b, dyn.saturation) ≈ dyn.saturation
     end
 
     x = evolve_optical_oscillators(opo, dyn)

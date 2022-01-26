@@ -1,5 +1,6 @@
 export OpticalOscillators,
        OPODynamics,
+       activation,
        evolve_optical_oscillators
 
 # Optical Parametric Oscillator (OPO)
@@ -16,7 +17,7 @@ struct OPODynamics{T <: Real}
     total_time::Int
 end
 
-activation(x::T, xsat::T) where T <: Real = abs(x) < xsat ? x : xsat
+activation(x::T, xsat::T) where T <: Real = abs(x) <= xsat ? x : xsat
 
 function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
@@ -32,7 +33,7 @@ function evolve_optical_oscillators(
                 Δx[i] += opo.scale * J * x[j]
             end
         end
-        x = activation.(Δx, Ref(dyn.saturation))
+        x = activation.(x .+ Δx, Ref(dyn.saturation))
     end
     x
 end
