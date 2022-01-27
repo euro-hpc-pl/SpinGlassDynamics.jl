@@ -7,14 +7,13 @@ export OpticalOscillators,
 # Based on https://arxiv.org/pdf/1901.08927.pdf
 struct OpticalOscillators{T <: Real}
     ig::IsingGraph
-    pump::T
     scale::T
     noise::Vector{T}
 end
 struct OPODynamics{T <: Real}
     initial_state::Vector{T}
     saturation::T
-    total_time::Int
+    pump::Vector{T}
 end
 
 activation(x::T, xsat::T) where T <: Real = abs(x) <= xsat ? x : xsat
@@ -25,8 +24,8 @@ function evolve_optical_oscillators(
 )  where T <: Real
     N = length(dyn.initial_state)
     x = dyn.initial_state
-    for _ ∈ 1:dyn.total_time
-        Δx = opo.pump .* x .+ opo.noise
+    for p ∈ dyn.pump
+        Δx = p .* x .+ opo.noise
         for i ∈ 1:N, j ∈ 1:N
             if has_edge(opo.ig, i, j)
                 J = get_prop(opo.ig, i, j, :J)
