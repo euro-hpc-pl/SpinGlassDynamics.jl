@@ -16,7 +16,7 @@ struct OPODynamics{T <: Real}
     pump::Vector{T}
 end
 
-activation(x::T, xsat::T) where T <: Real = abs(x) <= xsat ? x : xsat
+activation(x::T, xsat::T=1.0) where T <: Real = abs(x) <= xsat ? x : xsat
 
 function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
@@ -26,10 +26,12 @@ function evolve_optical_oscillators(
     x = dyn.initial_state
     for p ∈ dyn.pump
         Δx = p .* x .+ opo.noise
-        for i ∈ 1:N, j ∈ 1:N
-            if has_edge(opo.ig, i, j)
-                J = get_prop(opo.ig, i, j, :J)
-                Δx[i] += opo.scale * J * x[j]
+        for i ∈ 1:N
+            if has_vertex(opo.ig, i) Δx[i] += get_prop(opo.ig, i, :h) end
+            for j ∈ 1:N
+                if has_edge(opo.ig, i, j)
+                    Δx[i] += opo.scale * get_prop(opo.ig, i, j, :J) * x[j]
+                end
             end
         end
         x = activation.(x .+ Δx, Ref(dyn.saturation))
