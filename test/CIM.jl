@@ -1,20 +1,20 @@
 using Noise
+using SpinGlassNetworks
 
 @testset "Simple Coherent Ising Machine simulator." begin
-    m, n, t = 3, 4, 3
-    L = m * n * t
+    L = 16
 
-    ig = ising_graph("$(@__DIR__)/instances/pathological/chim_$(m)_$(n)_$(t).txt")
+    ig = ising_graph("$(@__DIR__)/instances/basic/$(L)_001.txt")
 
-    scale = 0.6
+    scale = 0.3
     μ = 0.0
     σ = 0.3
     noise = add_gauss(zeros(L), σ, μ)
 
     x0 = zeros(L)
     sat = 1.0
-    time = 4000.0
-    pump = [-15.0 for i ∈ 1:time]
+    time = 1000
+    pump = collect(LinRange(-15, 0.01, time))
 
     opo = OpticalOscillators{Float64}(ig, scale, noise)
     dyn = OPODynamics{Float64}(x0, sat, pump)
@@ -36,6 +36,12 @@ using Noise
         @test activation(b, dyn.saturation) ≈ dyn.saturation
     end
 
+    sp = brute_force(ig, :CPU, num_states=10)
+    println(sp.energies)
+
     x = evolve_optical_oscillators(opo, dyn)
+
+    en = energy(ig, digitize_state(x))
+    println("en: ", en)
     println(x)
 end

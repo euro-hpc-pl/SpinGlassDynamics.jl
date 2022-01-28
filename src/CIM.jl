@@ -1,6 +1,7 @@
 export OpticalOscillators,
        OPODynamics,
        activation,
+       digitize_state,
        evolve_optical_oscillators
 
 # Optical Parametric Oscillator (OPO)
@@ -18,6 +19,11 @@ end
 
 activation(x::T, xsat::T=1.0) where T <: Real = abs(x) <= xsat ? x : xsat
 
+function digitize_state(state::Vector{<:Real})
+    Dict(i => σ < 0 ? -1 : 1 for (i, σ) ∈ enumerate(state))
+end
+
+# This is naive version just to see what is going on
 function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
@@ -34,6 +40,20 @@ function evolve_optical_oscillators(
                 end
             end
         end
+        x = activation.(x .+ Δx, Ref(dyn.saturation))
+    end
+    x
+end
+
+# # This is less naive version
+function __evolve_optical_oscillators(
+    opo::OpticalOscillators{T},
+    dyn::OPODynamics{T}
+)  where T <: Real
+    J, h = couplings(opo.ig), biases(opo.ig)
+    x = dyn.initial_state
+    for p ∈ dyn.pump
+        Δx = p .* x .+ opo.scale .* (dot(J, x) .+ h) .+ opo.noise
         x = activation.(x .+ Δx, Ref(dyn.saturation))
     end
     x
