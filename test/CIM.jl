@@ -1,3 +1,5 @@
+using Noise
+
 @testset "Simple Coherent Ising Machine simulator." begin
     m, n, t = 3, 4, 3
     L = m * n * t
@@ -5,7 +7,9 @@
     ig = ising_graph("$(@__DIR__)/instances/pathological/chim_$(m)_$(n)_$(t).txt")
 
     scale = 0.6
-    noise = rand(L)
+    μ = 0.0
+    σ = 0.3
+    noise = add_gauss(zeros(L), σ, μ)
 
     x0 = zeros(L)
     sat = 1.0
