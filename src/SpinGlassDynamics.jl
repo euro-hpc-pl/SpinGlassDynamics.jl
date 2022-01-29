@@ -7,7 +7,7 @@ using SpinGlassNetworks
 using MetaGraphs
 using LightGraphs
 using Memoize
-using Noise
+using Distributions
 using DifferentialEquations
 
 include("CIM.jl")

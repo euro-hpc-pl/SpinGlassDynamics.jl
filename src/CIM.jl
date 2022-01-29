@@ -1,4 +1,5 @@
-export OpticalOscillators,
+export
+       OpticalOscillators,
        OPODynamics,
        evolve_optical_oscillators
 
@@ -7,7 +8,9 @@ export OpticalOscillators,
 struct OpticalOscillators{T <: Real}
     ig::IsingGraph
     scale::T
-    noise::Vector{T}
+    amp::T
+    μ::T
+    σ::T
 end
 struct OPODynamics{T <: Real}
     initial_state::Vector{T}
@@ -20,14 +23,17 @@ function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
 )  where T <: Real
+    d = Normal(opo.μ, opo.σ)
+
     J, h = couplings(opo.ig), biases(opo.ig)
-    x = dyn.initial_state
-    m_old = zeros(length(x))
+    L = length(dyn.initial_state)
+    Δm, x = zeros(L), dyn.initial_state
+
     for p ∈ dyn.pump
-        Δx = p .* x .+ opo.scale .* (J * x .+ h) .+ opo.noise
-        m = (1.0 - dyn.momentum) .* Δx + dyn.momentum .* m_old
+        Δx = p .* x .+ opo.scale .* (J * x .+ h) .+ opo.amp .* rand(d, L)
+        m = (1.0 - dyn.momentum) .* Δx + dyn.momentum .* Δm
         x .+= m .* (abs.(x .+ m) .< dyn.saturation)
-        m_old = m
+        Δm = m
     end
     Int.(sign.(x))
 end
