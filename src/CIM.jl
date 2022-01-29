@@ -15,6 +15,7 @@ struct OPODynamics{T <: Real}
     initial_state::Vector{T}
     saturation::T
     pump::Vector{T}
+    momentum::T
 end
 
 activation(x::T, xsat::T=1.0) where T <: Real = abs(x) <= xsat ? x : xsat
@@ -23,8 +24,8 @@ function digitize_state(state::Vector{<:Real})
     Dict(i => σ < 0 ? -1 : 1 for (i, σ) ∈ enumerate(state))
 end
 
-# This is naive version just to see what is going on
-function evolve_optical_oscillators(
+# This is naive version just to see if the paper does not lie
+function __evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
 )  where T <: Real
@@ -45,16 +46,19 @@ function evolve_optical_oscillators(
     x
 end
 
-# # This is less naive version
-function __evolve_optical_oscillators(
+# This is less naive version ...
+function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
 )  where T <: Real
     J, h = couplings(opo.ig), biases(opo.ig)
     x = dyn.initial_state
+    m_old = zeros(length(x))
     for p ∈ dyn.pump
-        Δx = p .* x .+ opo.scale .* (dot(J, x) .+ h) .+ opo.noise
-        x = activation.(x .+ Δx, Ref(dyn.saturation))
+        Δx = p .* x .+ opo.scale .* (J * x .+ h) .+ opo.noise
+        m = (1.0 - dyn.momentum) .* Δx + dyn.momentum .* m_old
+        x .+= m .* (abs.(x .+ m) .< dyn.saturation)
+        m_old = m
     end
     x
 end
