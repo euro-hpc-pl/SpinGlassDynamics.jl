@@ -25,22 +25,6 @@ end
     opo = OpticalOscillators{Float64}(ig, scale, noise)
     dyn = OPODynamics{Float64}(x0, sat, pump, momentum)
 
-    @testset  "OpticalOscillators and OPODynamics work properly." begin
-        @test opo.scale ≈ scale
-        @test opo.noise ≈ noise
-
-        @test dyn.initial_state ≈ x0
-        @test dyn.saturation ≈ sat
-        @test dyn.pump ≈ pump
-    end
-
-    @testset "activation function works properly." begin
-        a = dyn.saturation - rand()
-        b = dyn.saturation + rand()
-        @test activation(a, dyn.saturation) ≈ a
-        @test activation(b, dyn.saturation) ≈ dyn.saturation
-    end
-
     N = 1000
     states = Vector{Vector{Int}}(undef, N)
     Threads.@threads for i ∈ 1:N

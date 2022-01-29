@@ -34,13 +34,6 @@ end
         @test dyn.pump ≈ pump
     end
 
-    @testset "activation function works properly." begin
-        a = dyn.saturation - rand()
-        b = dyn.saturation + rand()
-        @test activation(a, dyn.saturation) ≈ a
-        @test activation(b, dyn.saturation) ≈ dyn.saturation
-    end
-
     N = 100
     states = Vector{Vector{Int}}(undef, N)
     Threads.@threads for i ∈ 1:N
