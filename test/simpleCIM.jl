@@ -41,11 +41,14 @@ end
         @test activation(b, dyn.saturation) ≈ dyn.saturation
     end
 
-    sp = brute_force(ig, :CPU, num_states=1)
-    x = evolve_optical_oscillators(opo, dyn)
-
-    @testset "OPO find correct ground state." begin
-        σ = digitize_state(x)
-        @test energy(ig, σ) ≈ sp.energies[1]
+    N = 1000
+    energies = Vector{Float64}(undef, N)
+    Threads.@threads for i ∈ 1:N
+        noise = add_gauss(zeros(L), σ, μ)
+        opo = OpticalOscillators{Float64}(ig, scale, noise)
+        x = evolve_optical_oscillators(opo, dyn)
+        energies[i] =energy(ig, digitize_state(x))
     end
+
+    @test minimum(energies) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
 end
