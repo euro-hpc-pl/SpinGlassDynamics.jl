@@ -60,7 +60,7 @@ function evolve_optical_oscillators(
         x .+= m .* (abs.(x .+ m) .< dyn.saturation)
         m_old = m
     end
-    x
+    Int.(sign.(x))
 end
 
 # Degenerate Optical Parametric Oscillator (DOPO)

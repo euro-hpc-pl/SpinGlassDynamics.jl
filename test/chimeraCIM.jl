@@ -7,9 +7,9 @@ function ramp(t::T, τ::T, pi::T, pf::T) where T <: Real
 end
 
 @testset "Simple Coherent Ising Machine simulator for small Ising instance." begin
-    L = 4
+    L = 128
 
-    ig = ising_graph("$(@__DIR__)/instances/basic/$(L)_001.txt")
+    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     scale = 0.2
     μ = 0.0
@@ -41,7 +41,7 @@ end
         @test activation(b, dyn.saturation) ≈ dyn.saturation
     end
 
-    N = 100
+    N = 1000
     states = Vector{Vector{Int}}(undef, N)
     Threads.@threads for i ∈ 1:N
         noise = add_gauss(zeros(L), σ, μ)
@@ -49,5 +49,5 @@ end
         states[i] = evolve_optical_oscillators(opo, dyn)
     end
 
-    @test minimum(energy(states, ig)) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
+    println(minimum(energy(states, ig)))
 end
