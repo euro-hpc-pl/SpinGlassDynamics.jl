@@ -1,8 +1,8 @@
-using Noise
+using Distributions
 using SpinGlassNetworks
 
-function ramp(t::T, τ::T, pi::T, pf::T) where T <: Real
-    p = (pf + pi) + (pf - pi) * tanh(t / τ)
+function ramp(t::T, τ::T, α::T, pi::T, pf::T) where T <: Real
+    p = (pf + pi) + (pf - pi) * tanh(α * (2.0 * t / τ - 1.0))
     p / 2.0
 end
 
@@ -11,15 +11,15 @@ end
     ig = ising_graph("$(@__DIR__)/instances/basic/$(L)_001.txt")
 
     scale = 0.2
-    μ = 0.0
-    σ = 0.3
-    noise = add_gauss(zeros(L), σ, μ)
+    noise = Normal(0.0, 0.1)
 
     x0 = zeros(L)
     sat = 1.0
     time = 1000.
-    momentum = 0.9
-    pump = [ramp(t, time, -15.0, 0.0) for t ∈ -2*time:2*time]
+    pi, pf, α = -15.0, 0.0, 2.0
+    momentum = 0.4
+
+    pump = [ramp(t, time, α, pi, pf) for t ∈ 0:time]
 
     opo = OpticalOscillators{Float64}(ig, scale, noise)
     dyn = OPODynamics{Float64}(x0, sat, pump, momentum)
@@ -33,19 +33,11 @@ end
         @test dyn.pump ≈ pump
     end
 
-    sp = brute_force(ig, :CPU, num_states=1)
-    x = evolve_optical_oscillators(opo, dyn)
-
-    @testset "OPO find correct ground state." begin
-        N = 1000
-        energies = Vector{Float64}(undef, N)
-        Threads.@threads for i ∈ 1:N
-            noise = add_gauss(zeros(L), σ, μ)
-            opo = OpticalOscillators{Float64}(ig, scale, noise)
-            x = evolve_optical_oscillators(opo, dyn)
-            energies[i] =energy(ig, digitize_state(x))
-        end
-
-        @test minimum(energies) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
+    N = 500
+    states = Vector{Vector{Int}}(undef, N)
+    Threads.@threads for i ∈ 1:N
+        states[i] = evolve_optical_oscillators(opo, dyn)
     end
+
+    @test minimum(energy(states, ig)) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
 end
