@@ -1,7 +1,10 @@
+# CIM.jl: different algorithms to simulate coherent Ising machines.
+
 export
        OpticalOscillators,
        OPODynamics,
-       evolve_optical_oscillators
+       evolve_optical_oscillators,
+       noisy_mean_field_annealing
 
 @inline zeros_like(x::AbstractArray) = zeros(eltype(x), size(x))
 
@@ -36,6 +39,23 @@ function evolve_optical_oscillators(
     Int.(sign.(x))
 end
 
+# Noisy mean-field annealing (NMFA)
+# Based on https://arxiv.org/pdf/1806.08422.pdf
+function noisy_mean_field_annealing(
+    opo::OpticalOscillators{T},
+    dyn::OPODynamics{T}
+)  where T <: Real
+    J, h = couplings(opo.ig), biases(opo.ig)
+    x = dyn.initial_state
+    L = length(x)
+    nmr = sqrt.(h .^ 2 .+ dropdims(sum(J .^ 2, dims=2),dims=2))
+    for p ∈ dyn.pump
+        ϕ = (J * x .+ h) ./ nmr .+ rand(opo.noise, L)
+        x = (1.0 - dyn.momentum) .* x .- dyn.momentum .* tanh.(ϕ / p)
+    end
+    Int.(sign.(x))
+end
+
 # Degenerate Optical Parametric Oscillator (DOPO)
 # Based on https://www.nature.com/articles/s41467-018-07328-1
 struct DegenerateOscillators{T <: Real}
@@ -45,4 +65,5 @@ struct DegenerateOscillators{T <: Real}
 end
 
 function evolve_degenerate_oscillators()
+    # To be written
 end
