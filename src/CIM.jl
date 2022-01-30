@@ -3,6 +3,8 @@ export
        OPODynamics,
        evolve_optical_oscillators
 
+@inline zeros_like(x::AbstractArray) = zeros(eltype(x), size(x))
+
 # Optical Parametric Oscillator (OPO)
 # Based on https://arxiv.org/pdf/1901.08927.pdf
 struct OpticalOscillators{T <: Real}
@@ -22,9 +24,9 @@ function evolve_optical_oscillators(
     dyn::OPODynamics{T}
 )  where T <: Real
     J, h = couplings(opo.ig), biases(opo.ig)
-    L = length(dyn.initial_state)
-    Δm, x = zeros(L), dyn.initial_state
-
+    x = dyn.initial_state
+    L = length(x)
+    Δm = zeros_like(x)
     for p ∈ dyn.pump
         Δx = p .* x .+ opo.scale .* (J * x .+ h) .+ rand(opo.noise, L)
         m = (1.0 - dyn.momentum) .* Δx + dyn.momentum .* Δm
