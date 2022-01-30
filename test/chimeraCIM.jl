@@ -46,6 +46,4 @@ end
         @test  en_exact <= en < 0.0
         @test en_exact <= en_nmfa < 0.0
     end
-
-    println("opo: ", en, ", nmfa: ", en_nmfa)
 end
