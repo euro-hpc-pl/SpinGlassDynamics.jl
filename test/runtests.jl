@@ -7,7 +7,7 @@ using Test
 my_tests = []
 
 push!(my_tests,
-    #"simpleCIM.jl",
+    "simpleCIM.jl",
     "chimeraCIM.jl",
 )
 
