@@ -6,13 +6,13 @@ function ramp(t::T, τ::T, α::T, pi::T, pf::T) where T <: Real
     p / 2.0
 end
 
-@testset "Simple Coherent Ising Machine simulator for small Ising instance." begin
+@testset "Coherent Ising Machine simulator for chimera instances." begin
     L = 128
 
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     scale = 0.3
-    noise = Normal(0.0, 0.1)
+    noise = Normal(0.1, 0.3)
 
     x0 = zeros(L)
     sat = 1.0
@@ -25,7 +25,8 @@ end
     opo = OpticalOscillators{Float64}(ig, scale, noise)
     dyn = OPODynamics{Float64}(x0, sat, pump, momentum)
 
-    pump_nmfa = [10.0-0.1*i for i ∈ 1:time]
+    pump_nmfa = [ramp(t, time, α, 10., 1.) for t ∈ 0:time]
+
     opo_nmfa = OpticalOscillators{Float64}(ig, scale, noise)
     dyn_nmfa = OPODynamics{Float64}(x0, sat, pump_nmfa, momentum)
 
@@ -37,8 +38,14 @@ end
         states_nmfa[i] = noisy_mean_field_annealing(opo_nmfa, dyn_nmfa)
     end
 
-    # exact en = -210.93333400000003
-    println(minimum(energy(states, ig)))
-    println(minimum(energy(states_nmfa, ig)))
+    en = minimum(energy(states, ig))
+    en_nmfa = minimum(energy(states_nmfa, ig))
 
+    en_exact = -210.933334
+    @testset "Energy found is at least negative and within the bounds" begin
+        @test  en_exact <= en < 0.0
+        @test en_exact <= en_nmfa < 0.0
+    end
+
+    println("opo: ", en, ", nmfa: ", en_nmfa)
 end

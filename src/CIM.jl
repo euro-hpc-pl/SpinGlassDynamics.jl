@@ -48,7 +48,7 @@ function noisy_mean_field_annealing(
     J, h = couplings(opo.ig), biases(opo.ig)
     x = dyn.initial_state
     L = length(x)
-    nmr = sqrt.(h .^ 2 .+ dropdims(sum(J .^ 2, dims=2),dims=2))
+    nmr = sqrt.(h .^ 2 .+ dropdims(sum(J .^ 2, dims=2), dims=2))
     for p ∈ dyn.pump
         ϕ = (J * x .+ h) ./ nmr .+ rand(opo.noise, L)
         x = (1.0 - dyn.momentum) .* x .- dyn.momentum .* tanh.(ϕ / p)
