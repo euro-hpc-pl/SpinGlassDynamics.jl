@@ -51,7 +51,7 @@ function noisy_mean_field_annealing(
     nmr = sqrt.(h .^ 2 .+ dropdims(sum(J .^ 2, dims=2), dims=2))
     for p ∈ dyn.pump
         ϕ = (J * x .+ h) ./ nmr .+ rand(opo.noise, L)
-        x = (1.0 - dyn.momentum) .* x .- dyn.momentum .* tanh.(ϕ / p)
+        x = (1.0 - dyn.momentum) .* x .- dyn.momentum .* tanh.(ϕ ./ p)
     end
     Int.(sign.(x))
 end
