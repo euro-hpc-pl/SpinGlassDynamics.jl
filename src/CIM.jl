@@ -64,6 +64,36 @@ struct DegenerateOscillators{T <: Real}
     saturation::T
 end
 
-function evolve_degenerate_oscillators()
+struct DOPODynamics{T <: Real}
+    initial_state::Vector{T}
+    pump::Function
+    time::NTuple{T, 2}
+end
+
+function coherence!(du, u, dopo, t)
+    J, h = couplings(dopo.ig), biases(dopo.ig)
+    N = length(u) / 2
+    c = @view u[1:N]
+    s = @view u[N+1:end]
+    v = c .^ 2 .+ s .^ 2 .+ 1.0
+    du = vcat((dopo.pump(t) .- v) .* c .+ dopo.η .* (J * c .+ h), (-dopo.pump(t) .- v) .* s)
+end
+
+function noise!(du, u, dopo, t)
+    N = length(u) / 2
+    c = @view u[1:N]
+    s = @view u[N+1:end]
+    v = sqrt.(c .^ 2 + s .^ 2 .+ 1/2) ./ dopo.amp
+    du = vcat(v, v)
+end
+
+function evolve_degenerate_oscillators(
+    dopo::OpticalOscillators{T},
+    dyn::DOPODynamics{T}
+)  where T <: Real
     # To be written
+
+    sol = solve(SDEProblem(coherence!, noise!, dyn.initial_state, dyn.time, dopo))
+
+    Int.(sign.(sol.u[N+1:end]))
 end

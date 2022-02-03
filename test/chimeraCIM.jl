@@ -20,17 +20,17 @@ end
     pi, pf, α = -15.0, 0.0, 2.0
     momentum = 0.4
 
-    pump = [ramp(t, time, α, pi, pf) for t ∈ 0:time]
+    pump = [ramp(t, time, α, pi, pf) for t ∈ 1:time]
 
     opo = OpticalOscillators{Float64}(ig, scale, noise)
     dyn = OPODynamics{Float64}(x0, sat, pump, momentum)
 
-    pump_nmfa = [ramp(t, time, α, 10., 1.) for t ∈ 0:time]
+    pump_nmfa = [ramp(t, time, α, 10., 1.) for t ∈ 1:time]
 
     opo_nmfa = OpticalOscillators{Float64}(ig, scale, noise)
     dyn_nmfa = OPODynamics{Float64}(x0, sat, pump_nmfa, momentum)
 
-    N = 500
+    N = 1000
     states = Vector{Vector{Int}}(undef, N)
     states_nmfa = copy(states)
     Threads.@threads for i ∈ 1:N
