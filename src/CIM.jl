@@ -60,11 +60,7 @@ end
 # Based on https://www.nature.com/articles/s41467-018-07328-1
 struct DegenerateOscillators{T <: Real}
     ig::IsingGraph
-    pump::T
-    saturation::T
-end
-
-struct DOPODynamics{T <: Real}
+    scale::T
     initial_state::Vector{T}
     pump::Function
     time::NTuple{T, 2}
@@ -76,7 +72,9 @@ function coherence!(du, u, dopo, t)
     c = @view u[1:N]
     s = @view u[N+1:end]
     v = c .^ 2 .+ s .^ 2 .+ 1.0
-    du = vcat((dopo.pump(t) .- v) .* c .+ dopo.η .* (J * c .+ h), (-dopo.pump(t) .- v) .* s)
+    du = vcat(
+        (dopo.pump(t) .- v) .* c .+ dopo.scale .* (J * c .+ h), (-dopo.pump(t) .- v) .* s
+    )
 end
 
 function noise!(du, u, dopo, t)
@@ -87,13 +85,8 @@ function noise!(du, u, dopo, t)
     du = vcat(v, v)
 end
 
-function evolve_degenerate_oscillators(
-    dopo::OpticalOscillators{T},
-    dyn::DOPODynamics{T}
-)  where T <: Real
-    # To be written
-
-    sol = solve(SDEProblem(coherence!, noise!, dyn.initial_state, dyn.time, dopo))
-
-    Int.(sign.(sol.u[N+1:end]))
+function evolve_degenerate_oscillators(dopo::OpticalOscillators{T})  where T <: Real
+    sol = solve(SDEProblem(coherence!, noise!, dopo.initial_state, dopo.time, dopo))
+    N = length(sol.u) / 2
+    Int.(sign.(sol.u[end][N+1:end]))
 end
