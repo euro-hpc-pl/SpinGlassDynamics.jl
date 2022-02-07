@@ -73,17 +73,17 @@ function coherence(u, dopo, t)
     J, h = couplings(dopo.ig), biases(dopo.ig)
     N = length(u) ÷ 2
     c = @view u[1:N]
-    s = @view u[N+1:end]
-    v = c .^ 2 .+ s .^ 2 .+ 1
+    q = @view u[N+1:end]
+    v = c .^ 2 .+ q .^ 2 .+ 1
     Φ = dopo.scale .* (J * c .+ h)
-    vcat((dopo.pump(t) .- v) .* c .+ Φ, (-dopo.pump(t) .- v) .* s)
+    vcat((dopo.pump(t) .- v) .* c .+ Φ, (-dopo.pump(t) .- v) .* q)
 end
 
 function noise(u, dopo, t)
     N = length(u) ÷ 2
     c = @view u[1:N]
-    s = @view u[N+1:end]
-    v = sqrt.(c .^ 2 + s .^ 2 .+ 1/2) ./ dopo.amp
+    q = @view u[N+1:end]
+    v = sqrt.(c .^ 2 + q .^ 2 .+ 1/2) ./ dopo.amp
     vcat(v, v)
 end
 
@@ -95,5 +95,5 @@ function evolve_degenerate_oscillators(
     sol = solve(sde, save_everystep=false, args...)
     x = sol.u[end]
     N = length(x) ÷ 2
-    Int.(sign.(x[N+1:end]))
+    Int.(sign.(x[1:N]))
 end
