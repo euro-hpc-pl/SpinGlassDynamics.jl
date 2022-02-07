@@ -1,13 +1,5 @@
-using Distributions
-using SpinGlassNetworks
 
-function ramp(t::T, τ::T, α::T, pi::T, pf::T) where T <: Real
-    p = (pf + pi) + (pf - pi) * tanh(α * (2.0 * t / τ - 1.0))
-    p / 2.0
-end
-
-@testset "Stochastic differential equations for chimera." begin
-    L = 128
+@testset "Stochastic differential equations for chimera." begin    L = 128
 
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
