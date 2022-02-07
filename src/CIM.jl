@@ -69,29 +69,31 @@ struct DegenerateOscillators{T <: Real}
     time::NTuple{2, T}
 end
 
-function coherence!(du, u, dopo, t)
+function coherence(u, dopo, t)
     J, h = couplings(dopo.ig), biases(dopo.ig)
-    N = Int(length(u) // 2)
-    c = u[1:N]
-    s = u[N+1:end]
+    N = length(u) ÷ 2
+    c = @view u[1:N]
+    s = @view u[N+1:end]
     v = c .^ 2 .+ s .^ 2 .+ 1
-    du = vcat(
-        (dopo.pump(t) .- v) .* c .+ dopo.scale .* (J * c .+ h),
-        (-dopo.pump(t) .- v) .* s
-    )
+    Φ = dopo.scale .* (J * c .+ h)
+    vcat((dopo.pump(t) .- v) .* c .+ Φ, (-dopo.pump(t) .- v) .* s)
 end
 
-function noise!(du, u, dopo, t)
-    N = Int(length(u) // 2)
-    c = u[1:N]
-    s = u[N+1:end]
+function noise(u, dopo, t)
+    N = length(u) ÷ 2
+    c = @view u[1:N]
+    s = @view u[N+1:end]
     v = sqrt.(c .^ 2 + s .^ 2 .+ 1/2) ./ dopo.amp
-    du = vcat(v, v)
+    vcat(v, v)
 end
 
-function evolve_degenerate_oscillators(dopo::DegenerateOscillators{T})  where T <: Real
-    sde = SDEProblem(coherence!, noise!, dopo.initial_state, dopo.time, dopo)
-    sol = solve(sde)
-    N = Int(length(sol.u) // 2)
-    Int.(sign.(sol.u[end][N+1:end]))
+function evolve_degenerate_oscillators(
+    dopo::DegenerateOscillators{T};
+    args=()
+) where T <: Real
+    sde = SDEProblem(coherence, noise, dopo.initial_state, dopo.time, dopo)
+    sol = solve(sde, save_everystep=false, args...)
+    x = sol.u[end]
+    N = length(x) ÷ 2
+    Int.(sign.(x[N+1:end]))
 end
