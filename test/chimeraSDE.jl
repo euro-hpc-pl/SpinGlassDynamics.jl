@@ -2,7 +2,7 @@ using DifferentialEquations
 
 @testset "Stochastic differential equations for chimera." begin    L = 128
 
-    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
+    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt") # no biases
 
     scale = sqrt(10)
     amp = 70.

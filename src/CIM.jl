@@ -69,13 +69,14 @@ struct DegenerateOscillators{T <: Real}
     time::NTuple{2, T}
 end
 
+# For now, this not support biases.
 function coherence(u, dopo, t)
-    J, h = couplings(dopo.ig), biases(dopo.ig)
+    J = couplings(dopo.ig)
     N = length(u) ÷ 2
     c = @view u[1:N]
     q = @view u[N+1:end]
     v = c .^ 2 .+ q .^ 2 .+ 1
-    Φ = dopo.scale .* (J * c .+ h)
+    Φ = dopo.scale .* J * c
     vcat((dopo.pump(t) .- v) .* c .+ Φ, (-dopo.pump(t) .- v) .* q)
 end
 
