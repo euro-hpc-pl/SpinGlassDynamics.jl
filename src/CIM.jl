@@ -77,7 +77,7 @@ function coherence(u, dopo, t)
     q = @view u[N+1:end]
     v = c .^ 2 .+ q .^ 2 .+ 1
     Φ = dopo.scale .* J * c
-    vcat((dopo.pump(t) .- v) .* c .+ Φ, (-dopo.pump(t) .- v) .* q)
+    vcat((dopo.pump(t) .- v) .* c .- Φ, (-dopo.pump(t) .- v) .* q)
 end
 
 function noise(u, dopo, t)
