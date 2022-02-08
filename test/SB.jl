@@ -1,18 +1,18 @@
 using DifferentialEquations
 using SpinGlassNetworks
+using LinearAlgebra
 
 @testset "simulated bifurcation simulator for chimera instances." begin
     L = 128
 
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt") # no biases, E = -210.13
-    #ig = ising_graph("$(@__DIR__)/instances/basic/16_001.txt") # no biases, E = -4.625
+    #ig = ising_graph("$(@__DIR__)/instances/basic/4_001.txt") # no biases, E = -4.625
 
-    J = couplings(ig)
-    Js = sqrt(sum(J .^ 2) / L / (L-1))
+    #J = couplings(ig)
 
     kerr_coeff = 1.
     detuning = 1.
-    scale = 0.5 / sqrt(L) / Js
+    scale = 0.9
 
     init_state = rand(2 * L)
     num_steps = 100

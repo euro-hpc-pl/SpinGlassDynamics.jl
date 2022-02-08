@@ -5,8 +5,8 @@ using DifferentialEquations
 
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt") # no biases
 
-    scale = sqrt(20)
-    amp = 70.
+    scale = sqrt(10)
+    amp = 30.
     x0 = zeros(2 * L)
     time = (0.0, 100.)
     pump = t -> 2 * tanh(2 * t / L)

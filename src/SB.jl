@@ -27,6 +27,7 @@ function evolve_kerr_oscillators(kpo::KerrOscillators{T}, dyn::KPODynamics) wher
     @assert N % 2 == 0
 
     J = -couplings(kpo.ig)
+    J += transpose(J)
     x = dyn.init_state[1:N÷2]
     y = dyn.init_state[N÷2+1:end]
 
@@ -40,18 +41,29 @@ function evolve_kerr_oscillators(kpo::KerrOscillators{T}, dyn::KPODynamics) wher
 end
 
 # This procedure does the same as the evolve_kerr_oscillators.
-# It uses DifferentialEquations engine to solve ODEs. This is
-# slow but potentially accurate to an arbitrary precision.
+# However, it uses DifferentialEquations engine to solve ODEs.
+# This is slow but potentially accurate to an arbitrary precision.
 function kerr_system(u, kpo, t)
     J = -couplings(kpo.ig)
+    J += transpose(J)
     N = length(u) ÷ 2
     x = @view u[1:N]
     y = @view u[N+1:end]
+
     Φ = kpo.scale .* J * x
     vcat(
         kpo.detuning .* y,
         -(kpo.kerr_coeff .* x .^ 2 .+ (kpo.detuning - kpo.pump(t))) .* x .+ Φ
     )
+    #=
+    # These equations are based on the simplification from
+    # https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
+    Φ = kpo.scale .* J * sign.(x)
+    vcat(
+        kpo.detuning .* y,
+        -(kpo.detuning - kpo.pump(t)) .* x .+ Φ
+    )
+    =#
 end
 
 function naive_evolve_kerr_oscillators(

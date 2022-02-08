@@ -28,7 +28,8 @@ function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
 )  where T <: Real
-    J, h = couplings(opo.ig), biases(opo.ig)
+    J, h = -couplings(opo.ig), biases(opo.ig)
+    J += transpose(J)
     x = dyn.initial_state
     L = length(x)
     Δm = zeros_like(x)
@@ -72,6 +73,7 @@ end
 # For now, this not support biases.
 function coherence(u, dopo, t)
     J = couplings(dopo.ig)
+    J += transpose(J)
     N = length(u) ÷ 2
     c = @view u[1:N]
     q = @view u[N+1:end]

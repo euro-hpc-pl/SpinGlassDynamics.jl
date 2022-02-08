@@ -11,14 +11,14 @@ end
 
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
-    scale = 0.3
+    scale = 0.7
     noise = Normal(0.1, 0.3)
 
     x0 = zeros(L)
     sat = 1.0
-    time = 1000.
+    time = 100.
     pi, pf, α = -15.0, 0.0, 2.0
-    momentum = 0.4
+    momentum = 0.7
 
     pump = [ramp(t, time, α, pi, pf) for t ∈ 1:time]
 
@@ -30,7 +30,7 @@ end
     opo_nmfa = OpticalOscillators{Float64}(ig, scale, noise)
     dyn_nmfa = OPODynamics{Float64}(x0, sat, pump_nmfa, momentum)
 
-    N = 1000
+    N = 100
     states = Vector{Vector{Int}}(undef, N)
     states_nmfa = copy(states)
     Threads.@threads for i ∈ 1:N
