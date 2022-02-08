@@ -11,5 +11,7 @@ using Distributions
 using DifferentialEquations
 
 include("CIM.jl")
+include("SB.jl")
+include("MemComputing.jl")
 
 end #module
