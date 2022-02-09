@@ -19,8 +19,46 @@ struct KPODynamics{T <: Real}
     dt::T
 end
 
-function kerr_kernel()
-# to be written
+function kerr_kernel(states, J, dt, Δ, p, K, ξ, num_steps, num_rep)
+    idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+    L = size(J, 2)
+
+    for r ∈ 1:num_rep
+        x[idx], y[idx] = 2 * rand() - 1, 2 * rand() - 1
+        for i ∈ 1:num_steps
+            x[idx] += Δ * y[idx] * dt
+            # syn is needed
+            Φ = 0.0
+            for j ∈ 1:L Φ += J[idx, j] * x[j] end
+            y[idx] -= (K * x[idx] ^ 3 + (Δ - p[i+1]) * x[idx] - ξ * Φ) * dt
+        end
+        states[r, idx] = Int(sign(x[idx]))
+    end
+    return
+end
+
+function energy_kernel(J, energies, σ)
+    idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
+    L = size(J, 1)
+    en = 0.0
+    for k=1:L, l=k+1:L
+        @inbounds en += σ[k, idx] * J[k, l] * σ[l, idx]
+    end
+    energies[idx] = en
+    return
+end
+
+function cuda_kerr_oscillators(kpo::KerrOscillators{T}, dyn::KPODynamics) where T <: Real
+    L = nv(kpo.ig)
+    C = -couplings(kpo.ig)
+
+    σ = CUDA.zeros(Int32, num_rep, L)
+    J = CUDA.CuArray(C + transpose(C))
+
+    bl = 16
+    th = ceil(L / bl)
+
+    @cuda threads=th blocks=bl kerr_kernel(σ, J, dt, Δ, p, K, ξ, num_steps, num_rep)
 end
 
 # https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
