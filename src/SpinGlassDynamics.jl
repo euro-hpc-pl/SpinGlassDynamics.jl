@@ -9,6 +9,7 @@ using LightGraphs
 using Memoize
 using Distributions
 using DifferentialEquations
+using CUDA
 
 include("CIM.jl")
 include("SB.jl")
