@@ -27,11 +27,12 @@ function kerr_kernel(states, J, dt, Δ, p, K, ξ, num_steps, num_rep)
         x[idx], y[idx] = 2 * rand() - 1, 2 * rand() - 1
         for i ∈ 1:num_steps
             x[idx] += Δ * y[idx] * dt
-            # syn is needed
+            # add sync
             Φ = 0.0
             for j ∈ 1:L Φ += J[idx, j] * x[j] end
             y[idx] -= (K * x[idx] ^ 3 + (Δ - p[i+1]) * x[idx] - ξ * Φ) * dt
         end
+        # add sync
         states[r, idx] = Int(sign(x[idx]))
     end
     return
