@@ -19,6 +19,10 @@ struct KPODynamics{T <: Real}
     dt::T
 end
 
+function kerr_kernel()
+# to be written
+end
+
 # https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
 # This procedure uses the symplectic Euler method,
 # which make it potentially fast for CPUs/ GPU / FPGA.
