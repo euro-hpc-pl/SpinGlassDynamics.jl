@@ -48,17 +48,35 @@ function energy_kernel(J, energies, σ)
     return
 end
 
-function cuda_kerr_oscillators(kpo::KerrOscillators{T}, dyn::KPODynamics) where T <: Real
+function cuda_kerr_oscillators(
+    kpo::KerrOscillators{T},
+    dyn::KPODynamics,
+    num_rep = 10000
+) where T <: Real
     L = nv(kpo.ig)
     C = -couplings(kpo.ig)
 
-    σ = CUDA.zeros(Int32, num_rep, L)
+    σ = CUDA.zeros(Int, num_rep, L)
+    energies = CUDA.zeros(L)
     J = CUDA.CuArray(C + transpose(C))
 
-    bl = 16
-    th = ceil(L / bl)
+    dt = dyn.dt
+    Δ = kpo.detuning
+    K = kop.kerr_coeff
+    ξ = kpo.scale
+    steps = dyn.num_steps
+    p = [dt * (i - 1) / num_steps / dt for i ∈ 1:dyn.num_steps]
 
-    @cuda threads=th blocks=bl kerr_kernel(σ, J, dt, Δ, p, K, ξ, num_steps, num_rep)
+    bl = 16
+    th = ceil(Int, L / bl)
+    @cuda threads=th blocks=bl kerr_kernel(σ, J, dt, Δ, p, K, ξ, steps, num_rep)
+
+    L = size(σ, 1)
+    bl = 16
+    th = ceil(Int, L / bl)
+    @cuda threads=th blocks=bl energy_kernel(J, energies, σ)
+
+    energies, σ
 end
 
 # https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
