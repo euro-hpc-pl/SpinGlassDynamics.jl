@@ -8,8 +8,8 @@ my_tests = []
 
 push!(my_tests,
     #"simpleCIM.jl",
-    #"chimeraCIM.jl",
-    #"chimeraSDE.jl",
+    "chimeraCIM.jl",
+    "chimeraSDE.jl",
     "SB.jl"
 )
 

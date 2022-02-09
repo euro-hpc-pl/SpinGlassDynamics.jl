@@ -9,6 +9,7 @@ end
 @testset "Coherent Ising Machine simulator for chimera instances." begin
     L = 128
 
+    #ig = ising_graph("$(@__DIR__)/instances/chimera_random/$(L).txt") # no biases, E = -204.73
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     scale = 0.7
@@ -16,7 +17,7 @@ end
 
     x0 = zeros(L)
     sat = 1.0
-    time = 100.
+    time = 1000.
     pi, pf, α = -15.0, 0.0, 2.0
     momentum = 0.7
 
@@ -30,7 +31,7 @@ end
     opo_nmfa = OpticalOscillators{Float64}(ig, scale, noise)
     dyn_nmfa = OPODynamics{Float64}(x0, sat, pump_nmfa, momentum)
 
-    N = 100
+    N = 1000
     states = Vector{Vector{Int}}(undef, N)
     states_nmfa = copy(states)
     Threads.@threads for i ∈ 1:N
