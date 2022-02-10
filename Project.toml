@@ -14,6 +14,7 @@ MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 SpinGlassNetworks = "b7f6bd3e-55dc-4da6-96a9-ef9dbec6ac19"
 SpinGlassTensors = "7584fc6a-5a23-4eeb-8277-827aab0146ea"
 Distributions  = "31c24e10-a181-5473-b8eb-7969acd0382f" 
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 
 [compat]
 MKL = "0.4.2"

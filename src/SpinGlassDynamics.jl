@@ -13,7 +13,7 @@ using CUDA
 
 include("CIM.jl")
 include("SB.jl")
-#include("SBcuda.jl")
+include("SBcuda.jl")
 include("MemComputing.jl")
 
 end #module
