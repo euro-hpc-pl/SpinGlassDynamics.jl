@@ -99,13 +99,8 @@ function cuda_evolve_kerr_oscillators(
     y = CUDA.zeros(L, num_rep)
 
     iparams = CUDA.CuArray([dyn.num_steps, num_rep])
-
-    fparams = CUDA.CuArray(
-        [dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale]
-    )
-    pump = CUDA.CuArray(
-        [kpo.pump(dyn.dt * (i-1)) for i ∈ 1:dyn.num_steps+1]
-    )
+    fparams = CUDA.CuArray([dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale])
+    pump = CUDA.CuArray([kpo.pump(dyn.dt * (i-1)) for i ∈ 1:dyn.num_steps+1])
 
     th = threads_per_block
     bl = (ceil(Int, L / th[1]), ceil(Int, num_rep / th[2]))
