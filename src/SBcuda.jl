@@ -2,6 +2,19 @@ export
     cuda_evolve_kerr_oscillators
 
 """
+Creates the adjacency matrix for the Ising graph with an auxiliary spin.
+"""
+function kerr_adjacency_matrix(ig::IsingGraph)
+    C, b = couplings(ig), biases(ig)
+    L = size(C, 1)
+    J = zeros(L+1, L+1)
+    J[1:L, 1:L] = C
+    J[1:L, L] = b
+    J += transpose(J)
+    -J
+end
+
+"""
 This is CUDA kernel to evolve Kerr oscillators.
 It threads over system (Ising) size and repetitions.
 There is room for improvement although is works quite well.
@@ -59,7 +72,7 @@ function energy_kernel(J, h, energies, σ)
     for i ∈ idx:stride:length(energies)
         en = 0.0
         for k=1:L
-            @inbounds en += h[k] * σ[k]
+            @inbounds en += h[k] * σ[k] * σ[L+1]
             for l=k+1:L @inbounds en += σ[k, i] * J[k, l] * σ[l, i] end
         end
         @inbounds energies[i] = en
@@ -76,21 +89,17 @@ function cuda_evolve_kerr_oscillators(
     num_rep = 512,
     threads_per_block = (16, 16)
 ) where T <: Real
-    L = nv(kpo.ig)
-    C = couplings(kpo.ig)
+    N = nv(kpo.ig)
+    L = N + 1
 
-    # TODO add capability to solve with biases
-    #h = biases(kpo.ig)
-    #@assert h ≈ zeros(L)
+    JK = CUDA.CuArray(kerr_adjacency_matrix(kpo.ig))
 
     σ = CUDA.zeros(Int, L, num_rep)
-    J = CUDA.CuArray(-C - transpose(C))
-    h = CUDA.CuArray(biases(kpo.ig))
-
     x = CUDA.zeros(L, num_rep)
     y = CUDA.zeros(L, num_rep)
 
     iparams = CUDA.CuArray([dyn.num_steps, num_rep])
+
     fparams = CUDA.CuArray(
         [dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale]
     )
@@ -103,16 +112,17 @@ function cuda_evolve_kerr_oscillators(
 
     @time begin
         CUDA.@sync begin
-            @cuda threads=th blocks=bl kerr_kernel(x, y, σ, J, pump, fparams, iparams)
+            @cuda threads=th blocks=bl kerr_kernel(x, y, σ, JK, pump, fparams, iparams)
         end
     end
 
     # energy GPU
     th = prod(threads_per_block)
     bl = ceil(Int, num_rep / th)
-    energies = CUDA.zeros(num_rep)
-    J = CUDA.CuArray(C)
+
+    J = CUDA.CuArray(couplings(kpo.ig))
     h = CUDA.CuArray(biases(kpo.ig))
+    energies = CUDA.zeros(num_rep)
 
     @time begin
         CUDA.@sync begin
@@ -124,7 +134,7 @@ function cuda_evolve_kerr_oscillators(
 
     # energy CPU
     σ_cpu = Array(σ)
-    states = [σ_cpu[:, i] for i ∈ 1:size(σ_cpu, 2)]
+    states = [σ_cpu[end, i] * σ_cpu[1:end-1, i] for i ∈ 1:size(σ_cpu, 2)]
     @time en = minimum(energy(states, kpo.ig))
 
     en, en0
