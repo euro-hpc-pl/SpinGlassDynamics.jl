@@ -20,7 +20,7 @@ using Distributions
 
     init_state = rand(Uniform(-1, 1), 2 * L) # this is not used here
     num_steps = 1000
-    dt = 0.9
+    dt = 0.7
     pump = t -> t / num_steps / dt
 
     kpo = KerrOscillators{Float64}(ig, kerr_coeff, detuning, pump, scale)
