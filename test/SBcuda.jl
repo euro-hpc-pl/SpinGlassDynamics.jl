@@ -25,7 +25,7 @@ using Distributions
     kpo = KerrOscillators{Float64}(ig, kerr_coeff, detuning, pump, scale)
     dyn = KPODynamics{Float64}(init_state, num_steps, dt)
 
-    en = cuda_evolve_kerr_oscillators(kpo, dyn, 500)
+    en = cuda_evolve_kerr_oscillators(kpo, dyn, 256, (16, 16))
 
     #@testset "Energy found is negative and within the bounds" begin
     #    @test  en < 0.
