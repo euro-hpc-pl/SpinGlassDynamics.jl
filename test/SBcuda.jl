@@ -6,20 +6,21 @@ using Distributions
 @testset "simulated bifurcation simulator for chimera instances." begin
     L = 2048
 
-    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
+    # This instance is without biases
+    en_tn = -3296.53 # (found by SpinGlassEngine @ β = 1)
+    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt")
+    @assert biases(ig) ≈ zeros(L)
 
-    J = couplings(ig)
-    M = -(J + transpose(J))
-    sp = eigen(Symmetric(M), 1:1)
-    λ = sp.values[]
+    #en_tn = -3336.773383 # (found by SpinGlassEngine @ β = 3)
+    #ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     kerr_coeff = 1.
-    detuning = 1.
-    scale = 0.9 #* detuning / abs(λ)
+    detuning = 1.0
+    scale = 0.9
 
-    init_state = rand(Uniform(-1, 1), 2 * L)
-    num_steps = 100
-    dt = 0.1
+    init_state = rand(Uniform(-1, 1), 2 * L) # this is not used here
+    num_steps = 1000
+    dt = 0.7
     pump = t -> t / num_steps / dt
 
     kpo = KerrOscillators{Float64}(ig, kerr_coeff, detuning, pump, scale)
@@ -27,8 +28,10 @@ using Distributions
 
     en = cuda_evolve_kerr_oscillators(kpo, dyn, 256, (16, 16))
 
-    #@testset "Energy found is negative and within the bounds" begin
-    #    @test  en < 0.
-    #end
-    println("cuda kpo: ", en)
+    @testset "Energy found is negative and within the bounds" begin
+        @test en[1] ≈ en[2]
+        @test en[1] < 0.0
+    end
+    println("cuda kpo: ", en[1])
+    println("found by TN: ", en_tn)
 end
