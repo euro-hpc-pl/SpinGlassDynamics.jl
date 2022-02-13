@@ -32,21 +32,20 @@ function kerr_kernel(a, b, states, J, pump, fparams, iparams)
     num_steps, num_rep = iparams
 
     for i ∈ idx:x_stride:L, j ∈ idy:y_stride:num_rep
-        a[i, j] = 2 * rand() - 1
-        b[i, j] = 2 * rand() - 1
 
+        # This uses symplectic Euler method (different variations are possible)
         for k ∈ 1:num_steps
             Φ = 0.0
             # TODO consider: a[l, j] <-> sign(a[l, j])
             for l ∈ 1:L @inbounds Φ += J[i, l] * a[l, j] end
 
-            # TODO: consider syncing here
+            # TODO consider syncing here
             #sync_threads()
             # TODO adding noise [~W_i * sqrt(dt)] should produce behaviour similar to CIM
 
             @inbounds b[i, j] -= (K * a[i, j] ^ 3 + (Δ - pump[k]) * a[i, j] - ξ * Φ) * dt
             # TODO consider also using this instead:
-            # @inbounds b[i, j] -= ((Δ - pump[k]) * a[i, j] - ξ * Φ) * dt
+            #@inbounds b[i, j] -= ((Δ - pump[k]) * a[i, j] - ξ * Φ) * dt
 
             @inbounds a[i, j] += Δ * b[i, j] * dt
 
@@ -88,7 +87,7 @@ This is experimental function to run simulations and test ideas.
 """
 function cuda_evolve_kerr_oscillators(
     kpo::KerrOscillators{T},
-    dyn::KPODynamics,
+    dyn::KPODynamics{T},
     num_rep = 512,
     threads_per_block = (16, 16)
 ) where T <: Real
@@ -98,8 +97,8 @@ function cuda_evolve_kerr_oscillators(
     JK = CUDA.CuArray(kerr_adjacency_matrix(kpo.ig))
 
     σ = CUDA.zeros(Int, L, num_rep)
-    x = CUDA.zeros(L, num_rep)
-    y = CUDA.zeros(L, num_rep)
+    x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
+    y = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
 
     iparams = CUDA.CuArray([dyn.num_steps, num_rep])
     fparams = CUDA.CuArray([dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale])

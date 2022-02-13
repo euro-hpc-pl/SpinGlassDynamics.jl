@@ -18,15 +18,16 @@ using Distributions
     detuning = 1.0
     scale = 0.9
 
-    init_state = rand(Uniform(-1, 1), 2 * L) # this is not used here
+    init_state = rand(Uniform(-1, 1), 2 * L) # this is not used for now
     num_steps = 500
     dt = 0.5
-    pump = t -> t / num_steps / dt
+    α = 2.0
+    pump = t -> t / num_steps / α / dt
 
     kpo = KerrOscillators{Float64}(ig, kerr_coeff, detuning, pump, scale)
     dyn = KPODynamics{Float64}(init_state, num_steps, dt)
 
-    en = cuda_evolve_kerr_oscillators(kpo, dyn, 256, (16, 16))
+    en = cuda_evolve_kerr_oscillators(kpo, dyn, 512, (16, 16))
 
     @testset "kerr_adjacency_matrix is created properly." begin
         JK = kerr_adjacency_matrix(ig)
@@ -39,10 +40,12 @@ using Distributions
         @test JK[end, 1:L] == -h
     end
 
-    @testset "Energy found is negative and within the bounds" begin
+    @testset "Energies on CPU & GPU agree and there are close to the estimated ground." begin
         @test en[1] ≈ en[2]
-        @test en[1] < 0.0
+        @test en[1] / en_tn >= 0.9
     end
+
     println("cuda kpo: ", en[1])
     println("found by TN: ", en_tn)
+    println("ratio: ", round(en[1] / en_tn, digits=2))
 end
