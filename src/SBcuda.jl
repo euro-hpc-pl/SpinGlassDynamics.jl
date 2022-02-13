@@ -1,4 +1,5 @@
 export
+    kerr_adjacency_matrix,
     cuda_evolve_kerr_oscillators
 
 """
@@ -9,7 +10,7 @@ function kerr_adjacency_matrix(ig::IsingGraph)
     L = size(C, 1)
     J = zeros(L+1, L+1)
     J[1:L, 1:L] = C
-    J[1:L, L] = b
+    J[1:L, end] = b
     J += transpose(J)
     -J
 end
@@ -21,16 +22,16 @@ There is room for improvement although is works quite well.
 """
 function kerr_kernel(a, b, states, J, pump, fparams, iparams)
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-    xstride = gridDim().x * blockDim().x
+    x_stride = gridDim().x * blockDim().x
 
     idy = (blockIdx().y - 1) * blockDim().y + threadIdx().y
-    ystride = gridDim().y * blockDim().y
+    y_stride = gridDim().y * blockDim().y
 
     L = size(J, 1)
     dt, Δ, K, ξ = fparams
     num_steps, num_rep = iparams
 
-    for i ∈ idx:xstride:L, j ∈ idy:ystride:num_rep
+    for i ∈ idx:x_stride:L, j ∈ idy:y_stride:num_rep
         a[i, j] = 2 * rand() - 1
         b[i, j] = 2 * rand() - 1
 
@@ -41,6 +42,7 @@ function kerr_kernel(a, b, states, J, pump, fparams, iparams)
 
             # TODO: consider syncing here
             #sync_threads()
+            # TODO adding noise [~W_i * sqrt(dt)] should produce behaviour similar to CIM
 
             @inbounds b[i, j] -= (K * a[i, j] ^ 3 + (Δ - pump[k]) * a[i, j] - ξ * Φ) * dt
             # TODO consider also using this instead:
@@ -51,9 +53,10 @@ function kerr_kernel(a, b, states, J, pump, fparams, iparams)
             # inelastic walls at +/- 1
             if abs(a[i, j]) > 1
                 @inbounds a[i, j] = sign(a[i, j])
-                @inbounds b[i, j] = 2 * rand() - 1
+                @inbounds b[i, j] = 0.0
+
                 # TODO consider this instead:
-                #@inbounds b[i, j] = 0.0
+                #@inbounds b[i, j] = 2 * rand() - 1
             end
         end
         @inbounds states[i, j] = Int(sign(a[i, j]))
@@ -64,7 +67,7 @@ end
 """
 This is CUDA kernel to compute energies from states.
 """
-function energy_kernel(J, h, energies, σ)
+function kerr_energy_kernel(J, h, energies, σ)
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     stride = gridDim().x * blockDim().x
 
@@ -72,7 +75,7 @@ function energy_kernel(J, h, energies, σ)
     for i ∈ idx:stride:length(energies)
         en = 0.0
         for k=1:L
-            @inbounds en += h[k] * σ[k] * σ[L+1]
+            @inbounds en += h[k] * σ[k, i] * σ[end, i]
             for l=k+1:L @inbounds en += σ[k, i] * J[k, l] * σ[l, i] end
         end
         @inbounds energies[i] = en
@@ -121,7 +124,7 @@ function cuda_evolve_kerr_oscillators(
 
     @time begin
         CUDA.@sync begin
-            @cuda threads=th blocks=bl energy_kernel(J, h, energies, σ)
+            @cuda threads=th blocks=bl kerr_energy_kernel(J, h, energies, σ)
         end
     end
 
