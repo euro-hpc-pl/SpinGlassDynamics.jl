@@ -65,6 +65,7 @@ end
 
 """
 This is CUDA kernel to compute energies from states.
+Takes into account embedding.
 """
 function kerr_energy_kernel(J, h, energies, σ)
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x

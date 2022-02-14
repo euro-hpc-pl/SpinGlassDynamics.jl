@@ -21,7 +21,7 @@ using DifferentialEquations
     end
 
     en = minimum(energy(states, ig))
-    en_exact = -210.13333399999996
+    en_exact = -210.13
 
     @testset "Energy found is at least negative and within the bounds" begin
         @test  en_exact <= en < 0.

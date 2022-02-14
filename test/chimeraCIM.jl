@@ -31,7 +31,7 @@ end
     opo_nmfa = OpticalOscillators{Float64}(ig, scale, noise)
     dyn_nmfa = OPODynamics{Float64}(x0, sat, pump_nmfa, momentum)
 
-    N = 1000
+    N = 100
     states = Vector{Vector{Int}}(undef, N)
     states_nmfa = copy(states)
     Threads.@threads for i ∈ 1:N
