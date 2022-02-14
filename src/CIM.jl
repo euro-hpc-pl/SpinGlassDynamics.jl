@@ -1,49 +1,69 @@
-export OpticalOscillators,
+# CIM.jl: different algorithms to simulate coherent Ising machines.
+
+export
+       OpticalOscillators,
        OPODynamics,
-       evolve_optical_oscillators
+       evolve_optical_oscillators,
+       noisy_mean_field_annealing
+
+@inline zeros_like(x::AbstractArray) = zeros(eltype(x), size(x))
 
 # Optical Parametric Oscillator (OPO)
 # Based on https://arxiv.org/pdf/1901.08927.pdf
 struct OpticalOscillators{T <: Real}
     ig::IsingGraph
-    pump::T
     scale::T
-    noise::Vector{T}
+    noise::Distributions.Sampleable
 end
 struct OPODynamics{T <: Real}
     initial_state::Vector{T}
     saturation::T
-    total_time::Int
+    pump::Vector{T}
+    momentum::T
 end
-
-activation(x::T, xsat::T) where T <: Real = abs(x) < xsat ? x : xsat
 
 function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
 )  where T <: Real
-    N = length(dyn.initial_state)
+    J, h = couplings(opo.ig), biases(opo.ig)
     x = dyn.initial_state
-    for _ ∈ 1:dyn.total_time
-        Δx = opo.pump .* x .+ opo.noise
-        for i ∈ 1:N, j ∈ 1:N
-            if has_edge(opo.ig, i, j)
-                J = get_prop(opo.ig, i, j :J)
-                Δx[i] += opo.scale * J * x[j]
-            end
-        end
-        x = activation.(Δx, Ref(dyn.saturation))
+    L = length(x)
+    Δm = zeros_like(x)
+    for p ∈ dyn.pump
+        Δx = p .* x .+ opo.scale .* (J * x .+ h) .+ rand(opo.noise, L)
+        m = (1.0 - dyn.momentum) .* Δx + dyn.momentum .* Δm
+        x .+= m .* (abs.(x .+ m) .< dyn.saturation)
+        Δm = m
     end
-    x
+    Int.(sign.(x))
+end
+
+# Noisy mean-field annealing (NMFA)
+# Based on https://arxiv.org/pdf/1806.08422.pdf
+function noisy_mean_field_annealing(
+    opo::OpticalOscillators{T},
+    dyn::OPODynamics{T}
+)  where T <: Real
+    J, h = couplings(opo.ig), biases(opo.ig)
+    x = dyn.initial_state
+    L = length(x)
+    nmr = sqrt.(h .^ 2 .+ dropdims(sum(J .^ 2, dims=2), dims=2))
+    for p ∈ dyn.pump
+        ϕ = (J * x .+ h) ./ nmr .+ rand(opo.noise, L)
+        x = (1.0 - dyn.momentum) .* x .- dyn.momentum .* tanh.(ϕ ./ p)
+    end
+    Int.(sign.(x))
 end
 
 # Degenerate Optical Parametric Oscillator (DOPO)
 # Based on https://www.nature.com/articles/s41467-018-07328-1
-
 struct DegenerateOscillators{T <: Real}
     ig::IsingGraph
     pump::T
     saturation::T
 end
+
 function evolve_degenerate_oscillators()
+    # To be written
 end
