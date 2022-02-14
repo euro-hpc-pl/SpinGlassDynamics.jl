@@ -29,17 +29,6 @@ using Distributions
 
     en = cuda_evolve_kerr_oscillators(kpo, dyn, 512, (16, 16))
 
-    @testset "kerr_adjacency_matrix is created properly." begin
-        JK = kerr_adjacency_matrix(ig)
-        J, h = couplings(ig), biases(ig)
-        L = size(J, 1)
-        @test size(JK) == (L+1, L+1)
-        @test JK == transpose(JK)
-        @test diag(JK) ≈ zeros(L+1)
-        @test JK[1:L, 1:L] == -(J + transpose(J))
-        @test JK[end, 1:L] == -h
-    end
-
     @testset "Energies on CPU & GPU agree and there are close to the estimated ground." begin
         @test en[1] ≈ en[2]
         @test en[1] / en_tn >= 0.9

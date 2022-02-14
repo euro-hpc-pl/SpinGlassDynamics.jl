@@ -1,23 +1,6 @@
 export
     cuda_evolve_optical_oscillators
 
-# This should be merged with kerr_energy_kernel.
-function opo_energy_kernel(J, h, energies, σ)
-    idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-    stride = gridDim().x * blockDim().x
-
-    L = size(J, 1)
-    for i ∈ idx:stride:length(energies)
-        en = 0.0
-        for k=1:L
-            @inbounds en += h[k] * σ[k, i]
-            for l=k+1:L @inbounds en += σ[k, i] * J[k, l] * σ[l, i] end
-        end
-        @inbounds energies[i] = en
-    end
-    return
-end
-
 """
 This is CUDA kernel to evolve optical oscillators (CIM)
 """
@@ -58,9 +41,10 @@ function cuda_evolve_optical_oscillators(
 ) where T <: Real
     L = nv(opo.ig)
 
-    C = couplings(opo.ig)
-    h = CUDA.CuArray(biases(opo.ig))
-    JO = CUDA.CuArray(C + transpose(C))
+    C, b = couplings(opo.ig), biases(opo.ig)
+
+    J = CUDA.CuArray(-C - transpose(C))
+    h = CUDA.CuArray(-b)
 
     σ = CUDA.zeros(Int, L, num_rep)
     x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
@@ -77,7 +61,7 @@ function cuda_evolve_optical_oscillators(
     @time begin
         CUDA.@sync begin
             @cuda threads=th blocks=bl opo_kernel(
-                x, σ, -JO, -h, pump, noise, fparams, iparams
+                x, σ, J, h, pump, noise, fparams, iparams
         )
         end
     end
@@ -86,11 +70,10 @@ function cuda_evolve_optical_oscillators(
     th = prod(threads_per_block)
     bl = ceil(Int, num_rep / th)
 
-    J = CUDA.CuArray(C)
     energies = CUDA.zeros(num_rep)
     @time begin
         CUDA.@sync begin
-            @cuda threads=th blocks=bl opo_energy_kernel(J, h, energies, σ)
+            @cuda threads=th blocks=bl energy_kernel(J, h, energies, σ)
         end
     end
 
