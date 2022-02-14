@@ -10,12 +10,12 @@ end
     L = 2048
 
     # This instance is without biases
-    en_tn = -3296.53 # (found by SpinGlassEngine @ β = 1)
-    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt")
-    @assert biases(ig) ≈ zeros(L)
+    #en_tn = -3296.53 # (found by SpinGlassEngine @ β = 1)
+    #ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt")
+    #@assert biases(ig) ≈ zeros(L)
 
-    #en_tn = -3336.773383 # (found by SpinGlassEngine @ β = 3)
-    #ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
+    en_tn = -3336.773383 # (found by SpinGlassEngine @ β = 3)
+    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     scale = 0.7
     noise = Normal(0.0, 0.3)
