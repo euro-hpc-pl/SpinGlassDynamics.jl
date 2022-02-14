@@ -20,7 +20,7 @@ This is CUDA kernel to evolve Kerr oscillators.
 It threads over system (Ising) size and repetitions.
 There is room for improvement although is works quite well.
 """
-function kerr_kernel(a, b, states, J, pump, fparams, iparams)
+function kerr_kernel(x, states, J, pump, fparams, iparams)
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     x_stride = gridDim().x * blockDim().x
 
@@ -32,33 +32,33 @@ function kerr_kernel(a, b, states, J, pump, fparams, iparams)
     num_steps, num_rep = iparams
 
     for i ∈ idx:x_stride:L, j ∈ idy:y_stride:num_rep
-
+        y = 0.0
         # This uses symplectic Euler method (different variations are possible)
         for k ∈ 1:num_steps
             Φ = 0.0
-            # TODO consider: a[l, j] <-> sign(a[l, j])
-            for l ∈ 1:L @inbounds Φ += J[i, l] * a[l, j] end
+            # TODO consider: x[l, j] <-> sign(x[l, j])
+            for l ∈ 1:L @inbounds Φ += J[i, l] * x[l, j] end
 
             # TODO consider syncing here
             #sync_threads()
             # TODO adding noise [~W_i * sqrt(dt)] should produce behaviour similar to CIM
 
-            @inbounds b[i, j] -= (K * a[i, j] ^ 3 + (Δ - pump[k]) * a[i, j] - ξ * Φ) * dt
+            @inbounds y -= (K * x[i, j] ^ 3 + (Δ - pump[k]) * x[i, j] - ξ * Φ) * dt
             # TODO consider also using this instead:
-            #@inbounds b[i, j] -= ((Δ - pump[k]) * a[i, j] - ξ * Φ) * dt
+            #@inbounds y -= ((Δ - pump[k]) * x[i, j] - ξ * Φ) * dt
 
-            @inbounds a[i, j] += Δ * b[i, j] * dt
+            @inbounds x[i, j] += Δ * y * dt
 
             # inelastic walls at +/- 1
-            if abs(a[i, j]) > 1
-                @inbounds a[i, j] = sign(a[i, j])
-                @inbounds b[i, j] = 0.0
+            if abs(x[i, j]) > 1.0
+                @inbounds x[i, j] = sign(x[i, j])
+                @inbounds y = 0.0
 
                 # TODO consider this instead:
-                #@inbounds b[i, j] = 2 * rand() - 1
+                #@inbounds y = 2 * rand() - 1
             end
         end
-        @inbounds states[i, j] = Int(sign(a[i, j]))
+        @inbounds states[i, j] = Int(sign(x[i, j]))
     end
     return
 end
@@ -99,7 +99,6 @@ function cuda_evolve_kerr_oscillators(
 
     σ = CUDA.zeros(Int, L, num_rep)
     x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
-    y = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
 
     iparams = CUDA.CuArray([dyn.num_steps, num_rep])
     fparams = CUDA.CuArray([dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale])
@@ -110,7 +109,7 @@ function cuda_evolve_kerr_oscillators(
 
     @time begin
         CUDA.@sync begin
-            @cuda threads=th blocks=bl kerr_kernel(x, y, σ, JK, pump, fparams, iparams)
+            @cuda threads=th blocks=bl kerr_kernel(x, σ, JK, pump, fparams, iparams)
         end
     end
 
