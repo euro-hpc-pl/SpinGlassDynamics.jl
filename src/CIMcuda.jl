@@ -59,7 +59,7 @@ function cuda_evolve_optical_oscillators(
     L = nv(opo.ig)
 
     C = couplings(opo.ig)
-    h = CUDA.CuArray(biases(opo.ig))
+    h = CUDA.CuArray(-biases(opo.ig))
     JO = CUDA.CuArray(-(C + transpose(C)))
 
     σ = CUDA.zeros(Int, L, num_rep)
