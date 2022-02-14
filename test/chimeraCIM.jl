@@ -42,7 +42,7 @@ end
     en = minimum(energy(states, ig))
     en_nmfa = minimum(energy(states_nmfa, ig))
 
-    en_exact = -210.933334
+    en_exact = -210.93
     @testset "Energy found is at least negative and within the bounds" begin
         @test  en_exact <= en < 0.0
         @test en_exact <= en_nmfa < 0.0
