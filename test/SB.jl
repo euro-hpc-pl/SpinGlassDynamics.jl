@@ -3,26 +3,21 @@ using SpinGlassNetworks
 using LinearAlgebra
 using Distributions
 
-@testset "simulated bifurcation simulator for chimera instances." begin
+@testset "Simulated Bifurcation simulator for chimera instances." begin
     L = 128
 
-    #ig = ising_graph("$(@__DIR__)/instances/chimera_random/$(L).txt") # no biases, E = -204.73
-    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt") # no biases, E = -210.13
-    #ig = ising_graph("$(@__DIR__)/instances/basic/4_001.txt") # no biases, E = -4.625
-
-    J = couplings(ig)
-    M = -(J + transpose(J))
-    sp = eigen(Symmetric(M), 1:1)
-    λ = sp.values[]
+    en_tn = -210.13
+    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     kerr_coeff = 1.
-    detuning = 1.
-    scale = 0.7 #* detuning / abs(λ)
+    detuning = 1.0
+    scale = 0.9
 
     init_state = rand(Uniform(-1, 1), 2 * L)
-    num_steps = 100
-    dt = 0.25
-    pump = t -> t / num_steps / dt
+    num_steps = 500
+    dt = 0.2
+    α = 2.0
+    pump = t -> t / num_steps / α / dt
 
     kpo = KerrOscillators{Float64}(ig, kerr_coeff, detuning, pump, scale)
     dyn = KPODynamics{Float64}(init_state, num_steps, dt)
@@ -30,7 +25,8 @@ using Distributions
     N = 500
     states = Vector{Vector{Int}}(undef, N)
     states_naive = copy(states)
-    Threads.@threads for i ∈ 1:N
+    #Threads.@threads
+    for i ∈ 1:N
         states[i] = evolve_kerr_oscillators(kpo, dyn)
         states_naive[i] = naive_evolve_kerr_oscillators(kpo, dyn)
     end

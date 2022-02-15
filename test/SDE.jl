@@ -1,10 +1,10 @@
 using DifferentialEquations
 
-@testset "Stochastic differential equations for chimera." begin
+@testset "Stochastic differential equations." begin
     L = 128
 
-    ig = ising_graph("$(@__DIR__)/instances/chimera_random/$(L).txt") # no biases, E = -204.73
-    #ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/002.txt") # no biases
+    en_exact = -210.13
+    ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     scale = sqrt(10)
     amp = 30.
@@ -14,17 +14,15 @@ using DifferentialEquations
 
     dopo = DegenerateOscillators{Float64}(ig, scale, amp, x0, pump, time)
 
-    N = 10
+    N = 100
     states = Vector{Vector{Int}}(undef, N)
     Threads.@threads for i ∈ 1:N
         states[i] = evolve_degenerate_oscillators(dopo; args=(SRIW1(), ))
     end
 
     en = minimum(energy(states, ig))
-    en_exact = -210.13
 
-    @testset "Energy found is at least negative and within the bounds" begin
-        @test  en_exact <= en < 0.
+    @testset "Energy is close to the estimated ground." begin
+        @test  en / en_exact >= 0.9
     end
-    println("dopo: ", en)
 end

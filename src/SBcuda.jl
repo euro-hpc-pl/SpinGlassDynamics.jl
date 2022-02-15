@@ -27,11 +27,11 @@ function kerr_kernel(x, states, J, h, pump, fparams, iparams)
             for l ∈ 1:L @inbounds Φ += J[i, l] * x[l, j] end
 
             # TODO consider syncing here
-            #sync_threads()
+            CUDA.sync_threads()
             # TODO adding noise [~W_i * sqrt(dt)] should produce behaviour similar to CIM
 
-            @inbounds y -= (K * x[i, j] ^ 3 + (Δ - pump[k]) * x[i, j] - ξ * Φ) * dt
             # TODO consider also using this instead:
+            @inbounds y -= (K * x[i, j] ^ 3 + (Δ - pump[k]) * x[i, j] + ξ * Φ) * dt
             #@inbounds y -= ((Δ - pump[k]) * x[i, j] - ξ * Φ) * dt
 
             @inbounds x[i, j] += Δ * y * dt
@@ -61,8 +61,8 @@ function energy_kernel(J, h, energies, σ)
     for i ∈ idx:stride:length(energies)
         en = 0.0
         for k=1:L
-            @inbounds en -= h[k] * σ[k, i]
-            for l=k+1:L @inbounds en -= σ[k, i] * J[k, l] * σ[l, i] end
+            @inbounds en += h[k] * σ[k, i]
+            for l=k+1:L @inbounds en += σ[k, i] * J[k, l] * σ[l, i] end
         end
         @inbounds energies[i] = en
     end
@@ -78,16 +78,15 @@ function cuda_evolve_kerr_oscillators(
     num_rep = 512,
     threads_per_block = (16, 16)
 ) where T <: Real
-    L = nv(kpo.ig)
+
+    C, b = couplings(kpo.ig), biases(kpo.ig)
+    C += transpose(C)
+    L = size(C, 1)
 
     σ = CUDA.zeros(Int, L, num_rep)
     x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
-
-    C, b = couplings(kpo.ig), biases(kpo.ig)
-
-    J = CUDA.CuArray(-C - transpose(C))
-    h = CUDA.CuArray(-b)
-
+    J, h = CUDA.CuArray(C),  CUDA.CuArray(b)
+    
     iparams = CUDA.CuArray([dyn.num_steps, num_rep])
     fparams = CUDA.CuArray([dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale])
     pump = CUDA.CuArray([kpo.pump(dyn.dt * (i-1)) for i ∈ 1:dyn.num_steps+1])

@@ -20,7 +20,7 @@ function opo_kernel(x, states, J, h, pump, noise, fparams, iparams)
         for k ∈ 1:num_steps
             Φ = h[i]
             for l ∈ 1:L @inbounds Φ += J[i, l] * x[l, j] end
-            @inbounds Δx = pump[k] * x[i, j] + ξ * Φ + noise[i, j]
+            @inbounds Δx = pump[k] * x[i, j] - ξ * Φ + noise[i, j]
             m = (1.0 - α) * Δx + α * Δm
             @inbounds x[i, j] += m * (abs(x[i, j] + m) < sat)
             Δm = m
@@ -39,12 +39,14 @@ function cuda_evolve_optical_oscillators(
     num_rep = 512,
     threads_per_block = (16, 16)
 ) where T <: Real
-    L = nv(opo.ig)
 
     C, b = couplings(opo.ig), biases(opo.ig)
+    C += transpose(C)
+    L = size(C, 1)
 
-    J = CUDA.CuArray(-C - transpose(C))
-    h = CUDA.CuArray(-b)
+    σ = CUDA.zeros(Int, L, num_rep)
+    x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
+    J, h = CUDA.CuArray(C),  CUDA.CuArray(b)
 
     σ = CUDA.zeros(Int, L, num_rep)
     x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)

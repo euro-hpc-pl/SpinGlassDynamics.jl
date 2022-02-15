@@ -28,13 +28,13 @@ function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
 )  where T <: Real
-    J, h = -couplings(opo.ig), biases(opo.ig)
+    J, h = couplings(opo.ig), biases(opo.ig)
     J += transpose(J)
     x = dyn.initial_state
     L = length(x)
     Δm = zeros_like(x)
     for p ∈ dyn.pump
-        Δx = p .* x .+ opo.scale .* (J * x .+ h) .+ rand(opo.noise, L)
+        Δx = p .* x .- opo.scale .* (J * x .+ h) .+ rand(opo.noise, L)
         m = (1 - dyn.momentum) .* Δx + dyn.momentum .* Δm
         x .+= m .* (abs.(x .+ m) .< dyn.saturation)
         Δm = m
@@ -70,15 +70,15 @@ struct DegenerateOscillators{T <: Real}
     time::NTuple{2, T}
 end
 
-# For now, this not support biases.
 function coherence(u, dopo, t)
     J = couplings(dopo.ig)
+    h = biases(dopo.ig)
     J += transpose(J)
     N = length(u) ÷ 2
     c = @view u[1:N]
     q = @view u[N+1:end]
     v = c .^ 2 .+ q .^ 2 .+ 1
-    Φ = dopo.scale .* J * c
+    Φ = dopo.scale .* (J * c .+ h)
     vcat((dopo.pump(t) .- v) .* c .- Φ, (-dopo.pump(t) .- v) .* q)
 end
 

@@ -18,7 +18,7 @@ end
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     scale = 0.7
-    noise = Normal(0.0, 0.3)
+    noise = Normal(0.1, 0.3)
 
     x0 = zeros(L) # this is not used for now
     sat = 1.0

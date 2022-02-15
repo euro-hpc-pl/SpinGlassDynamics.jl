@@ -26,16 +26,22 @@ function evolve_kerr_oscillators(kpo::KerrOscillators{T}, dyn::KPODynamics) wher
     N = length(dyn.init_state)
     @assert N % 2 == 0
 
-    J = -couplings(kpo.ig)
+    J, h = couplings(kpo.ig), biases(kpo.ig)
     J += transpose(J)
+
     x = dyn.init_state[1:N÷2]
     y = dyn.init_state[N÷2+1:end]
 
     for i ∈ 1:dyn.num_steps
+        p = kpo.pump(i * dyn.dt)
+        Φ = kpo.scale .* (J * x .+ h)
+        y .-= (kpo.kerr_coeff .* x .^ 3 .+ (kpo.detuning - p) .* x .+ Φ) .* dyn.dt
+        #y .-= ((kpo.detuning - p) .* x .+ Φ) .* dyn.dt
         x .+= kpo.detuning .* y .* dyn.dt
-        Φ = kpo.scale .* J * x
-        p = kpo.pump((i+1) * dyn.dt)
-        y .-= (kpo.kerr_coeff .* x .^ 3 .+ (kpo.detuning - p) .* x .- Φ) .* dyn.dt
+
+        m = abs.(x) .> 1.0
+        y .*= m
+        x = x .* (.!m) .+ sign.(x) .* m
     end
     Int.(sign.(x))
 end
@@ -44,24 +50,24 @@ end
 # However, it uses DifferentialEquations engine to solve ODEs.
 # This is slow but potentially accurate to an arbitrary precision.
 function kerr_system(u, kpo, t)
-    J = -couplings(kpo.ig)
+    J, h = couplings(kpo.ig), biases(kpo.ig)
     J += transpose(J)
     N = length(u) ÷ 2
     x = @view u[1:N]
     y = @view u[N+1:end]
 
-    Φ = kpo.scale .* J * x
+    Φ = kpo.scale .* (J * x .+ h)
     vcat(
         kpo.detuning .* y,
-        -(kpo.kerr_coeff .* x .^ 2 .+ (kpo.detuning - kpo.pump(t))) .* x .+ Φ
+        -(kpo.kerr_coeff .* x .^ 2 .+ (kpo.detuning - kpo.pump(t))) .* x .- Φ
     )
     #=
     # These equations are based on the simplification from
     # https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
-    Φ = kpo.scale .* J * sign.(x)
+    Φ = kpo.scale .* (J * sign.(x) .+ h)
     vcat(
         kpo.detuning .* y,
-        -(kpo.detuning - kpo.pump(t)) .* x .+ Φ
+        -(kpo.detuning - kpo.pump(t)) .* x .- Φ
     )
     =#
 end
