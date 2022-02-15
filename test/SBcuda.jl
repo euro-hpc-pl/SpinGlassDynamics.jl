@@ -20,7 +20,7 @@ using Distributions
 
     init_state = rand(Uniform(-1, 1), 2 * L) # this is not used for now
     num_steps = 500
-    dt = 0.2
+    dt = 0.4
     α = 2.0
     pump = t -> t / num_steps / α / dt
 

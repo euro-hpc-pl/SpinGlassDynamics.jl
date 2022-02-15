@@ -27,7 +27,7 @@ function kerr_kernel(x, states, J, h, pump, fparams, iparams)
             for l ∈ 1:L @inbounds Φ += J[i, l] * x[l, j] end
 
             # TODO consider syncing here
-            CUDA.sync_threads()
+            #CUDA.sync_threads()
             # TODO adding noise [~W_i * sqrt(dt)] should produce behaviour similar to CIM
 
             # TODO consider also using this instead:
@@ -86,7 +86,7 @@ function cuda_evolve_kerr_oscillators(
     σ = CUDA.zeros(Int, L, num_rep)
     x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
     J, h = CUDA.CuArray(C),  CUDA.CuArray(b)
-    
+
     iparams = CUDA.CuArray([dyn.num_steps, num_rep])
     fparams = CUDA.CuArray([dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale])
     pump = CUDA.CuArray([kpo.pump(dyn.dt * (i-1)) for i ∈ 1:dyn.num_steps+1])

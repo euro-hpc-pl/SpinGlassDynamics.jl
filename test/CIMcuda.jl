@@ -6,7 +6,7 @@ function ramp(t::T, τ::T, α::T, pi::T, pf::T) where T <: Real
     p / 2.0
 end
 
-@testset "simulated bifurcation simulator for chimera instances." begin
+@testset "CIM simulator for chimera instances." begin
     L = 2048
 
     # This instance is without biases
