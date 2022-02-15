@@ -48,7 +48,6 @@ end
 
 # This procedure does the same as the evolve_kerr_oscillators.
 # However, it uses DifferentialEquations engine to solve ODEs.
-# This is slow but potentially accurate to an arbitrary precision.
 function kerr_system(u, kpo, t)
     J, h = couplings(kpo.ig), biases(kpo.ig)
     J += transpose(J)

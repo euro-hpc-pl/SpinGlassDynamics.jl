@@ -25,8 +25,7 @@ using Distributions
     N = 500
     states = Vector{Vector{Int}}(undef, N)
     states_naive = copy(states)
-    #Threads.@threads
-    for i ∈ 1:N
+    Threads.@threads for i ∈ 1:N
         states[i] = evolve_kerr_oscillators(kpo, dyn)
         states_naive[i] = naive_evolve_kerr_oscillators(kpo, dyn)
     end
@@ -35,8 +34,9 @@ using Distributions
     en_naive = minimum(energy(states_naive, ig))
 
     @testset "Energy found is at least negative and within the bounds" begin
-        @test  en < 0.
+        @test en / en_tn >= 0.9
+        @test en < 0.
     end
     println("kpo: ", en,)
-    println("naive kpo: ", en_naive,)
+    println("naive kpo: ", en_naive)
 end
