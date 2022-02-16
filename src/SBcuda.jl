@@ -99,25 +99,23 @@ function cuda_evolve_kerr_oscillators(
     ))
 
     th = threads_per_block
-    bl = (ceil(Int, L / th[1]), ceil(Int, num_rep / th[2]))
+    bl = (cld(L, th[1]), cld(num_rep, th[2]))
 
     @time begin
-        CUDA.@sync begin
-            @cuda threads=th blocks=bl kerr_kernel(
-                x, σ, J, h, pump, noise, fparams, iparams
-            )
-        end
+        CUDA.@sync @cuda(
+            threads=th, blocks=bl, kerr_kernel(x, σ, J, h, pump, noise, fparams, iparams)
+        )
     end
 
     # energy GPU
     th = prod(threads_per_block)
-    bl = ceil(Int, num_rep / th)
+    bl = cld(num_rep, th)
 
     energies = CUDA.zeros(num_rep)
     @time begin
-        CUDA.@sync begin
-            @cuda threads=th blocks=bl energy_kernel(J, h, energies, σ)
-        end
+        CUDA.@sync @cuda(
+             threads=th, blocks=bl, energy_kernel(J, h, energies, σ)
+        )
     end
 
     en0 = minimum(Array(energies))
