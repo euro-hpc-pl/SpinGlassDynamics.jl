@@ -20,14 +20,14 @@ using Distributions
 
     init_state = rand(Uniform(-1, 1), 2 * L) # this is not used for now
     num_steps = 500
-    dt = 0.4
+    dt = 0.5
     α = 2.0
     pump = t -> t / num_steps / α / dt
 
     kpo = KerrOscillators{Float64}(ig, kerr_coeff, detuning, pump, scale)
     dyn = KPODynamics{Float64}(init_state, num_steps, dt)
 
-    en = cuda_evolve_kerr_oscillators(kpo, dyn, 512, (16, 16))
+    en = cuda_evolve_kerr_oscillators(kpo, dyn, 256, (16, 16))
 
     @testset "Energies on CPU & GPU agree and there are close to the estimated ground." begin
         @test en[1] ≈ en[2]

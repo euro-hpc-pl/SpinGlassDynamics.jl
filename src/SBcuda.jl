@@ -7,7 +7,7 @@ This is CUDA kernel to evolve Kerr oscillators.
 It threads over both the system size and repetitions.
 There is room for improvement although it works quite well.
 """
-function kerr_kernel(x, states, J, h, pump, fparams, iparams)
+function kerr_kernel(x, states, J, h, pump, noise, fparams, iparams)
     idx = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     x_stride = gridDim().x * blockDim().x
 
@@ -29,6 +29,7 @@ function kerr_kernel(x, states, J, h, pump, fparams, iparams)
             # TODO consider syncing here
             #CUDA.sync_threads()
             # TODO adding noise [~W_i * sqrt(dt)] should produce behaviour similar to CIM
+            #@inbounds y += noise[i, j, k] * sqrt(dt)
 
             # TODO consider also using this instead:
             @inbounds y -= (K * x[i, j] ^ 3 + (Δ - pump[k]) * x[i, j] + ξ * Φ) * dt
@@ -89,7 +90,13 @@ function cuda_evolve_kerr_oscillators(
 
     iparams = CUDA.CuArray([dyn.num_steps, num_rep])
     fparams = CUDA.CuArray([dyn.dt, kpo.detuning, kpo.kerr_coeff, kpo.scale])
+
     pump = CUDA.CuArray([kpo.pump(dyn.dt * (i-1)) for i ∈ 1:dyn.num_steps+1])
+
+    # It is here only for now.
+    noise = CUDA.CuArray(
+        rand(Normal(0.1, 0.3), L, num_rep, dyn.num_steps
+    ))
 
     th = threads_per_block
     bl = (ceil(Int, L / th[1]), ceil(Int, num_rep / th[2]))
@@ -97,7 +104,7 @@ function cuda_evolve_kerr_oscillators(
     @time begin
         CUDA.@sync begin
             @cuda threads=th blocks=bl kerr_kernel(
-                x, σ, J, h, pump, fparams, iparams
+                x, σ, J, h, pump, noise, fparams, iparams
             )
         end
     end
