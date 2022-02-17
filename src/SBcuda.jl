@@ -123,7 +123,9 @@ function cuda_evolve_kerr_oscillators(
     # energy CPU
     σ_cpu = Array(σ)
     states = [σ_cpu[:, i] for i ∈ 1:size(σ_cpu, 2)]
-    @time en = minimum(energy(states, kpo.ig))
 
-    en, en0
+    en = energy(states, kpo.ig)
+    @time enm = minimum(en)
+
+    enm, en0, maximum(en)
 end

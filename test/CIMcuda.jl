@@ -41,4 +41,5 @@ end
     println("cuda opo: ", en[1])
     println("found by TN: ", en_tn)
     println("ratio: ", round(en[1] / en_tn, digits=2))
+    println("max en: ", round(en[3], digits=2))
 end
