@@ -32,12 +32,11 @@ function evolve_optical_oscillators(
     J += transpose(J)
     x = dyn.initial_state
     L = length(x)
-    Δm = zeros_like(x)
+    m = zeros_like(x)
     for p ∈ dyn.pump
         Δx = p .* x .+ opo.scale .* (J * x .+ h) .+ rand(opo.noise, L)
-        m = (1 - dyn.momentum) .* Δx + dyn.momentum .* Δm
+        m = (1 - dyn.momentum) .* Δx + dyn.momentum .* m
         x .+= m .* (abs.(x .+ m) .< dyn.saturation)
-        Δm = m
     end
     Int.(sign.(x))
 end
