@@ -97,7 +97,11 @@ struct DegenerateOscillators{T <: Real}
     time::NTuple{2, T}
 end
 
-# For now, this not support biases.
+"""
+$(TYPEDSIGNATURES)
+
+For now, this not support biases.
+"""
 function coherence(u, dopo, t)
     J = couplings(dopo.ig)
     J += transpose(J)
@@ -109,6 +113,10 @@ function coherence(u, dopo, t)
     vcat((dopo.pump(t) .- v) .* c .- Φ, (-dopo.pump(t) .- v) .* q)
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+"""
 function noise(u, dopo, t)
     N = length(u) ÷ 2
     c = @view u[1:N]
@@ -117,6 +125,10 @@ function noise(u, dopo, t)
     vcat(v, v)
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+"""
 function evolve_degenerate_oscillators(
     dopo::DegenerateOscillators{T};
     args=()
