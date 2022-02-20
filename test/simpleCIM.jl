@@ -6,8 +6,9 @@ function ramp(t::T, τ::T, α::T, pi::T, pf::T) where T <: Real
     p / 2.0
 end
 
-@testset "Simple Coherent Ising Machine simulator for small Ising instances." begin
+@testset "Simple Coherent Ising Machine simulator for small Ising instance." begin
     L = 4
+
     ig = ising_graph("$(@__DIR__)/instances/basic/$(L)_001.txt")
 
     scale = 0.2
@@ -39,5 +40,5 @@ end
         states[i] = evolve_optical_oscillators(opo, dyn)
     end
 
-    @test minimum(energy(states, ig)) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
+    @test minimum(energy(ig, states)) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
 end
