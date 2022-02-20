@@ -1,12 +1,12 @@
 # CIM.jl: different algorithms to simulate coherent Ising machines.
 
 export
-       OPODynamics,
-       OpticalOscillators,
-       DegenerateOscillators,
-       noisy_mean_field_annealing,
-       evolve_optical_oscillators,
-       evolve_degenerate_oscillators
+    OPODynamics,
+    OpticalOscillators,
+    DegenerateOscillators,
+    noisy_mean_field_annealing,
+    evolve_optical_oscillators,
+    evolve_degenerate_oscillators
 
 @inline zeros_like(x::AbstractArray) = zeros(eltype(x), size(x))
 
