@@ -5,7 +5,12 @@ export
     evolve_kerr_oscillators,
     naive_evolve_kerr_oscillators
 
-# https://www.science.org/doi/pdf/10.1126/sciadv.aav2372
+
+"""
+$(TYPEDSIGNATURES)
+
+https://www.science.org/doi/pdf/10.1126/sciadv.aav2372
+"""
 struct KerrOscillators{T <: Real}
     ig::IsingGraph
     kerr_coeff::T
@@ -19,9 +24,13 @@ struct KPODynamics{T <: Real}
     dt::T
 end
 
-# https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
-# This procedure uses the symplectic Euler method,
-# which make it potentially fast for CPUs/ GPU / FPGA.
+"""
+$(TYPEDSIGNATURES)
+
+https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
+This procedure uses the symplectic Euler method,
+which make it potentially fast for CPUs/ GPU / FPGA.
+"""
 function evolve_kerr_oscillators(kpo::KerrOscillators{T}, dyn::KPODynamics) where T <: Real
     N = length(dyn.init_state)
     @assert N % 2 == 0
@@ -40,9 +49,16 @@ function evolve_kerr_oscillators(kpo::KerrOscillators{T}, dyn::KPODynamics) wher
     Int.(sign.(x))
 end
 
-# This procedure does the same as the evolve_kerr_oscillators.
-# However, it uses DifferentialEquations engine to solve ODEs.
-# This is slow but potentially accurate to an arbitrary precision.
+"""
+$(TYPEDSIGNATURES)
+
+This procedure does the same as the `evolve_kerr_oscillators``.
+However, it uses DifferentialEquations engine to solve ODEs.
+This is slow but potentially accurate to an arbitrary precision.
+
+These equations are based on the simplification from
+https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
+"""
 function kerr_system(u, kpo, t)
     J = -couplings(kpo.ig)
     J += transpose(J)
@@ -55,17 +71,12 @@ function kerr_system(u, kpo, t)
         kpo.detuning .* y,
         -(kpo.kerr_coeff .* x .^ 2 .+ (kpo.detuning - kpo.pump(t))) .* x .+ Φ
     )
-    #=
-    # These equations are based on the simplification from
-    # https://www.science.org/doi/epdf/10.1126/sciadv.abe7953
-    Φ = kpo.scale .* J * sign.(x)
-    vcat(
-        kpo.detuning .* y,
-        -(kpo.detuning - kpo.pump(t)) .* x .+ Φ
-    )
-    =#
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+"""
 function naive_evolve_kerr_oscillators(
     kpo::KerrOscillators{T},
     dyn::KPODynamics,
