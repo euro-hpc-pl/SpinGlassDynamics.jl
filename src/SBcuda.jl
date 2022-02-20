@@ -92,11 +92,9 @@ function cuda_evolve_kerr_oscillators(
     num_rep = 512,
     threads_per_block = (16, 16)
 ) where T <: Real
-    N = nv(kpo.ig)
-    L = N + 1
-
     JK = CUDA.CuArray(kerr_adjacency_matrix(kpo.ig))
-
+    N = size(JK, 1)
+    L = N + 1
     σ = CUDA.zeros(Int, L, num_rep)
     x = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
     y = CUDA.CuArray(2 .* rand(L, num_rep) .- 1)
@@ -133,7 +131,7 @@ function cuda_evolve_kerr_oscillators(
     # energy CPU
     σ_cpu = Array(σ)
     states = [σ_cpu[end, i] * σ_cpu[1:end-1, i] for i ∈ 1:size(σ_cpu, 2)]
-    @time en = minimum(energy(states, kpo.ig))
+    @time en = minimum(energy(kpo.ig, states))
 
     en, en0
 end

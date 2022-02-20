@@ -20,7 +20,7 @@ using DifferentialEquations
         states[i] = evolve_degenerate_oscillators(dopo; args=(SRIW1(), ))
     end
 
-    en = minimum(energy(states, ig))
+    en = minimum(energy(ig, states))
     en_exact = -210.13
 
     @testset "Energy found is at least negative and within the bounds" begin

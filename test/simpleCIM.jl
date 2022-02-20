@@ -40,5 +40,5 @@ end
         states[i] = evolve_optical_oscillators(opo, dyn)
     end
 
-    @test minimum(energy(states, ig)) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
+    @test minimum(energy(ig, states)) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
 end

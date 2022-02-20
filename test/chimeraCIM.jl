@@ -39,8 +39,8 @@ end
         states_nmfa[i] = noisy_mean_field_annealing(opo_nmfa, dyn_nmfa)
     end
 
-    en = minimum(energy(states, ig))
-    en_nmfa = minimum(energy(states_nmfa, ig))
+    en = minimum(energy(ig, states))
+    en_nmfa = minimum(energy(ig, states_nmfa))
 
     en_exact = -210.93
     @testset "Energy found is at least negative and within the bounds" begin
