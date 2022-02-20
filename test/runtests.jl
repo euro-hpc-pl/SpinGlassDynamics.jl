@@ -11,7 +11,7 @@ push!(my_tests,
     "chimeraCIM.jl",
     "chimeraSDE.jl",
     "SB.jl",
-    "SBcuda.jl"
+    # "SBcuda.jl"
 )
 
 for my_test in my_tests
