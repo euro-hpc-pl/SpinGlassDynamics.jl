@@ -3,6 +3,8 @@ export
     cuda_evolve_kerr_oscillators
 
 """
+$(TYPEDSIGNATURES)
+
 Creates the adjacency matrix for the Ising graph with an auxiliary spin.
 """
 function kerr_adjacency_matrix(ig::IsingGraph)
@@ -16,6 +18,8 @@ function kerr_adjacency_matrix(ig::IsingGraph)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 This is CUDA kernel to evolve Kerr oscillators.
 It threads over system (Ising) size and repetitions.
 There is room for improvement although is works quite well.
@@ -64,6 +68,8 @@ function kerr_kernel(a, b, states, J, pump, fparams, iparams)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 This is CUDA kernel to compute energies from states.
 Takes into account embedding.
 """
@@ -84,6 +90,8 @@ function kerr_energy_kernel(J, h, energies, σ)
 end
 
 """
+$(TYPEDSIGNATURES)
+
 This is experimental function to run simulations and test ideas.
 """
 function cuda_evolve_kerr_oscillators(
