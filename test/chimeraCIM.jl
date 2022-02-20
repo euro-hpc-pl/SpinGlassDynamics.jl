@@ -9,7 +9,6 @@ end
 @testset "Coherent Ising Machine simulator for chimera instances." begin
     L = 128
 
-    #ig = ising_graph("$(@__DIR__)/instances/chimera_random/$(L).txt") # no biases, E = -204.73
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
     scale = 0.7

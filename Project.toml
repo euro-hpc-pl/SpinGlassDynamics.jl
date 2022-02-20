@@ -7,6 +7,7 @@ version = "0.0.2"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Distributions  = "31c24e10-a181-5473-b8eb-7969acd0382f"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MKL = "33e6dc65-8f57-5167-99aa-e5a354878fb2"
 SpinGlassNetworks = "b7f6bd3e-55dc-4da6-96a9-ef9dbec6ac19"
@@ -15,12 +16,14 @@ SpinGlassNetworks = "b7f6bd3e-55dc-4da6-96a9-ef9dbec6ac19"
 CUDA = "3.8"
 DifferentialEquations = "7.1"
 Distributions = "0.25"
+DocStringExtensions = "0.8.6"
 MKL = "0.4.2"
 SpinGlassNetworks = "0.3"
 julia = "1.7"
 
 [extras]
+SpinGlassTensors = "7584fc6a-5a23-4eeb-8277-827aab0146ea"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["SpinGlassTensors", "Test"]

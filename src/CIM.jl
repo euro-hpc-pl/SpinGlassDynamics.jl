@@ -12,11 +12,24 @@ export
 
 # Optical Parametric Oscillator (OPO)
 # Based on https://arxiv.org/pdf/1901.08927.pdf
+"""
+$(TYPEDEF)
+
+$(TYPEDFIELDS)
+
+"""
 struct OpticalOscillators{T <: Real}
     ig::IsingGraph
     scale::T
     noise::Distributions.Sampleable
 end
+
+"""
+$(TYPEDEF)
+
+$(TYPEDFIELDS)
+
+"""
 struct OPODynamics{T <: Real}
     initial_state::Vector{T}
     saturation::T
@@ -24,6 +37,10 @@ struct OPODynamics{T <: Real}
     momentum::T
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+"""
 function evolve_optical_oscillators(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
@@ -41,8 +58,13 @@ function evolve_optical_oscillators(
     Int.(sign.(x))
 end
 
-# Noisy mean-field annealing (NMFA)
-# Based on https://arxiv.org/pdf/1806.08422.pdf
+"""
+$(TYPEDSIGNATURES)
+
+
+Noisy mean-field annealing (NMFA)
+Based on https://arxiv.org/pdf/1806.08422.pdf
+"""
 function noisy_mean_field_annealing(
     opo::OpticalOscillators{T},
     dyn::OPODynamics{T}
@@ -58,8 +80,14 @@ function noisy_mean_field_annealing(
     Int.(sign.(x))
 end
 
-# Degenerate Optical Parametric Oscillator (DOPO)
-# Based on https://www.nature.com/articles/s41467-018-07328-1
+"""
+$(TYPEDEF)
+
+$(TYPEDFIELDS)
+
+Degenerate Optical Parametric Oscillator (DOPO)
+Based on https://www.nature.com/articles/s41467-018-07328-1
+"""
 struct DegenerateOscillators{T <: Real}
     ig::IsingGraph
     scale::T
