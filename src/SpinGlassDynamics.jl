@@ -12,6 +12,5 @@ include("CIM.jl")
 include("SB.jl")
 include("SBcuda.jl")
 include("CIMcuda.jl")
-include("MemComputing.jl")
 
 end #module

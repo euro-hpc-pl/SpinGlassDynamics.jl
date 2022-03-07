@@ -42,6 +42,7 @@ end
     en = minimum(energy(ig, states))
     en_nmfa = minimum(energy(ig, states_nmfa))
 
+    println(en_nmfa, " ", en)
     @testset "Energy is close to the estimated ground." begin
         @test en / en_exact > 0.9
         @test en_exact <= en_nmfa < 0.0

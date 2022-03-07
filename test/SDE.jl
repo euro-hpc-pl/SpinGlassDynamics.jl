@@ -20,7 +20,7 @@ using DifferentialEquations
         states[i] = evolve_degenerate_oscillators(dopo; args=(SRIW1(), ))
     end
 
-    en = minimum(energy(states, ig))
+    en = minimum(energy(ig,states))
 
     @testset "Energy is close to the estimated ground." begin
         @test  en / en_exact >= 0.9
