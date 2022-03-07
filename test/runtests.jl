@@ -7,11 +7,12 @@ using Test
 my_tests = []
 
 push!(my_tests,
-    "simpleCIM.jl",
-    "chimeraCIM.jl",
-    "chimeraSDE.jl",
-    "SB.jl",
-    # "SBcuda.jl"
+    #"base.jl",
+    #"CIM.jl",
+    #"SDE.jl",
+    #"SB.jl",
+    "SBcuda.jl",
+    "CIMcuda.jl"
 )
 
 for my_test in my_tests

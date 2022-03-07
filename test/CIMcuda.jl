@@ -1,9 +1,12 @@
-using DifferentialEquations
 using SpinGlassNetworks
-using LinearAlgebra
 using Distributions
 
-@testset "simulated bifurcation simulator for chimera instances." begin
+function ramp(t::T, τ::T, α::T, pi::T, pf::T) where T <: Real
+    p = (pf + pi) + (pf - pi) * tanh(α * (2.0 * t / τ - 1.0))
+    p / 2.0
+end
+
+@testset "CIM simulator for chimera instances." begin
     L = 2048
 
     # This instance is without biases
@@ -14,27 +17,28 @@ using Distributions
     en_tn = -3336.773383 # (found by SpinGlassEngine @ β = 3)
     ig = ising_graph("$(@__DIR__)/instances/chimera_droplets/$(L)power/001.txt")
 
-    kerr_coeff = 1.
-    detuning = 1.0
-    scale = 0.9
+    scale = 0.7
+    noise = Normal(0.1, 0.3)
 
-    init_state = rand(Uniform(-1, 1), 2 * L) # this is not used for now
-    num_steps = 500
-    dt = 0.5
-    α = 2.0
-    pump = t -> t / num_steps / α / dt
+    x0 = zeros(L) # this is not used for now
+    sat = 1.0
+    time = 250.
+    pi, pf, α = -5.0, 0.0, 5.0
+    momentum = 0.9
 
-    kpo = KerrOscillators{Float64}(ig, kerr_coeff, detuning, pump, scale)
-    dyn = KPODynamics{Float64}(init_state, num_steps, dt)
+    pump = [ramp(t, time, α, pi, pf) for t ∈ 1:time]
 
-    en = cuda_evolve_kerr_oscillators(kpo, dyn, 256, (16, 16))
+    opo = OpticalOscillators{Float64}(ig, scale, noise)
+    dyn = OPODynamics{Float64}(x0, sat, pump, momentum)
+
+    en = cuda_evolve_optical_oscillators(opo, dyn, 256, (16, 16))
 
     @testset "Energies on CPU & GPU agree and there are close to the estimated ground." begin
         @test en[1] ≈ en[2]
         @test en[1] / en_tn >= 0.9
     end
 
-    println("cuda kpo: ", en[1])
+    println("cuda opo: ", en[1])
     println("found by TN: ", en_tn)
     println("ratio: ", round(en[1] / en_tn, digits=2))
     println("max en: ", round(en[3], digits=2))
