@@ -1,8 +1,11 @@
 using Documenter, SpinGlassDynamics
 # makedocs(
 #     modules=[SpinGlassDynamics],
-#     sitename="SpinGlassTensors.jl",
-#     format=Documenter.LaTeX()
+#     sitename="SpinGlassDynamics.jl",
+#     format=Documenter.LaTeX(platform="none"),
+#     pages=[
+#         "API Reference" => "index.md"
+#     ]
 # )
 makedocs(
     modules=[SpinGlassDynamics],
