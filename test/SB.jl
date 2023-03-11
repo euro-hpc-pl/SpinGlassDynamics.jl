@@ -30,8 +30,8 @@ using Distributions
         states_naive[i] = naive_evolve_kerr_oscillators(kpo, dyn)
     end
 
-    en = minimum(energy(ig, states))
-    en_naive = minimum(energy(ig, states_naive))
+    en = minimum(energy.(states, Ref(ig)))
+    en_naive = minimum(energy.(states_naive, Ref(ig)))
 
     @testset "Energy found is at least negative and within the bounds" begin
         @test en / en_tn >= 0.9

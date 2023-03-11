@@ -6,6 +6,23 @@ function ramp(t::T, τ::T, α::T, pi::T, pf::T) where T <: Real
     p / 2.0
 end
 
+# function energy(ig, σ)
+#     energy = 0
+#     # quadratic
+#     for edge ∈ edges(ig)
+#         i, j = src(edge), dst(edge)         
+#         J = get_prop(ig, i, j, :J) 
+#         energy += σ[i] * J * σ[j]   
+#     end 
+
+#     # linear
+#     for i ∈ vertices(ig)
+#         h = get_prop(ig, i, :h)   
+#         energy += h * σ[i]     
+#     end    
+#     return -energy
+# end
+
 @testset "Simple Coherent Ising Machine simulator for small Ising instance." begin
     L = 4
 
@@ -40,5 +57,5 @@ end
         states[i] = evolve_optical_oscillators(opo, dyn)
     end
 
-    @test minimum(energy(ig, states)) ≈ brute_force(ig, :CPU, num_states=1).energies[1]
+    @test minimum(energy.(states, Ref(ig))) ≈ brute_force(ig, num_states=1).energies[1]
 end

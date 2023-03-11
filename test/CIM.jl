@@ -39,8 +39,8 @@ end
         states_nmfa[i] = noisy_mean_field_annealing(opo_nmfa, dyn_nmfa)
     end
 
-    en = minimum(energy(ig, states))
-    en_nmfa = minimum(energy(ig, states_nmfa))
+    en = minimum(energy.(states, Ref(ig)))
+    en_nmfa = minimum(energy.(states_nmfa, Ref(ig)))
 
     println(en_nmfa, " ", en)
     @testset "Energy is close to the estimated ground." begin

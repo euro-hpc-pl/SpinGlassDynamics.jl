@@ -85,7 +85,7 @@ function cuda_evolve_optical_oscillators(
     σ_cpu = Array(σ)
     states = [σ_cpu[:, i] for i ∈ 1:size(σ_cpu, 2)]
 
-    en = energy(opo.ig, states)
+    en = energy.(states, Ref(opo.ig))
     @time enm = minimum(en)
 
     enm, en0, maximum(en)
