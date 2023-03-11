@@ -1,9 +1,10 @@
 name = "SpinGlassDynamics"
 uuid = "860688e1-f392-4e7d-926f-90b454cb2079"
 authors = ["Bartłomiej Gardas <bartek.gardas@gmail.com>", "Konrad Jałowiecki <dexter2206@gmail.com>", "Łukasz Pawela <lukasz.pawela@gmail.com>"]
-version = "0.0.1"
+version = "0.0.2"
 
 [deps]
+CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -12,12 +13,13 @@ MKL = "33e6dc65-8f57-5167-99aa-e5a354878fb2"
 SpinGlassNetworks = "b7f6bd3e-55dc-4da6-96a9-ef9dbec6ac19"
 
 [compat]
-DifferentialEquations = "7.1.0"
+CUDA = "3.8"
+DifferentialEquations = "7.1"
 Distributions = "0.25"
 DocStringExtensions = "0.8.6"
-MKL = "0.4.2, 0.5"
-SpinGlassNetworks = "0.2, 0.3"
-julia = "1.7"
+MKL = "0.4, 0.5, 0.6"
+SpinGlassNetworks = "0.3"
+julia = "1.7, 1.8"
 
 [extras]
 SpinGlassTensors = "7584fc6a-5a23-4eeb-8277-827aab0146ea"
